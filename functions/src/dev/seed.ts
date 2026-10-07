@@ -66,7 +66,7 @@ export function buildSeedData(now: Date): SeedData {
   const restaurants: Record<string, Doc> = {};
   for (const p of FAKE_PLACES) {
     restaurants[p.placeId] = {
-      name: p.name, address: p.address, roadAddress: p.roadAddress, lat: p.lat, lng: p.lng,
+      name: p.name, address: p.address, roadAddress: p.roadAddress, category: p.category, lat: p.lat, lng: p.lng,
       geohash: geohashForLocation([p.lat, p.lng]), region: regionFor(p.address, SEED_REGIONS),
       ...(sums[p.placeId] ? { ...sums[p.placeId], ...deriveScores(sums[p.placeId]) } : {}),
     };

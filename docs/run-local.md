@@ -1,7 +1,7 @@
 # 로컬에서 앱 돌려보기 (Chrome + Firebase Emulator)
 
 키·실서버 없이 전체 흐름(로그인 → 목록 → 상세 → 후기 작성 → 따봉·신고 → 프로필)을 볼 수 있다.
-카카오 검색과 영수증 OCR은 에뮬레이터에서만 **가짜**로 동작한다 (영수증은 어떤 사진이든 선택한 식당의 영수증으로 인정).
+카카오 검색과 영수증 OCR은 에뮬레이터에서 기본 **가짜**로 동작한다(검색은 아래 "진짜 식당 검색 켜기"로 진짜로 바꿀 수 있다) (영수증은 어떤 사진이든 선택한 식당의 영수증으로 인정).
 
 ## 준비 (1회)
 - Flutter SDK (`C:\src\flutter`, PATH 등록됨 — **새 터미널**을 열어야 `flutter`가 잡힌다), Chrome, Node 22+
@@ -13,6 +13,22 @@ npm --prefix functions run build
 npm --prefix functions run dev:setup
 cd app; flutter pub get; cd ..
 ```
+
+## 진짜 식당 검색 켜기 (선택, 카카오 REST 키 필요)
+기본값은 가짜 식당 6곳만 나온다. 실제 가게를 찾으려면 카카오 로컬 API 키를 넣는다. (영수증 인식은 계속 가짜라서 아무 사진이나 통과한다.)
+
+1. https://developers.kakao.com → 내 애플리케이션 → 애플리케이션 추가
+2. 앱 → 앱 키 → **REST API 키** 복사 (제품 설정에서 **카카오맵** 사용 설정이 꺼져 있으면 켠다)
+3. 저장소 루트에서 (키는 `functions/.secret.local` 에만 저장되고 git 에는 올라가지 않는다)
+```powershell
+npm --prefix functions run dev:setup -- --kakao-key=여기에_REST_키
+```
+4. 에뮬레이터를 다시 시작한다 (`emu` 또는 `emu:lan`). 이미 켜져 있었다면 껐다 켠다.
+5. 앱에서 `후기 쓰기` → `성수 국밥` 같은 이름으로 검색 → 실제 가게가 거리순으로 나온다.
+   성수동(성동구) 가게만 선택할 수 있고, 다른 지역은 `베타 지역 아님`으로 표시된다.
+
+가짜 검색으로 되돌리려면 `npm --prefix functions run dev:setup` (키 없이) 후 에뮬레이터를 다시 시작한다.
+> REST 키는 채팅·이슈·커밋에 붙여 넣지 않는다. 노출됐다면 카카오 콘솔에서 키를 재발급한다.
 
 ## 실행 (터미널 3개)
 ```powershell

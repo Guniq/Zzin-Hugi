@@ -10,16 +10,18 @@ enum RestaurantSort { real, bubble }
 enum ReviewSort { likes, recent }
 
 class PlaceResult {
-  const PlaceResult({required this.placeId, required this.name, required this.address, this.region});
+  const PlaceResult({required this.placeId, required this.name, required this.address, this.category = '', this.region});
   final String placeId;
   final String name;
   final String address;
+  final String category;
   final String? region;
 
   factory PlaceResult.fromMap(Map<String, dynamic> m) => PlaceResult(
         placeId: m['placeId'] as String,
         name: m['name'] as String,
         address: (m['address'] as String?) ?? '',
+        category: (m['category'] as String?) ?? '',
         region: m['region'] as String?,
       );
 }
@@ -29,6 +31,7 @@ class Restaurant {
     required this.id,
     required this.name,
     required this.address,
+    this.category = '',
     this.region,
     this.realScore,
     this.eventScore,
@@ -39,6 +42,7 @@ class Restaurant {
   final String id;
   final String name;
   final String address;
+  final String category;
   final String? region;
   final double? realScore;
   final double? eventScore;
@@ -50,6 +54,7 @@ class Restaurant {
         id: id,
         name: m['name'] as String,
         address: (m['address'] as String?) ?? '',
+        category: (m['category'] as String?) ?? '',
         region: m['region'] as String?,
         realScore: _d(m['realScore']),
         eventScore: _d(m['eventScore']),
@@ -58,7 +63,7 @@ class Restaurant {
         eventReviewCount: _i(m['eventReviewCount']),
       );
 
-  PlaceResult toPlace() => PlaceResult(placeId: id, name: name, address: address, region: region);
+  PlaceResult toPlace() => PlaceResult(placeId: id, name: name, address: address, category: category, region: region);
 }
 
 class Review {

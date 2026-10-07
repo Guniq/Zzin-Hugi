@@ -12,8 +12,8 @@ import 'package:zzinhugi/features/write/write_review_screen.dart';
 
 import '../helpers.dart';
 
-const p1 = PlaceResult(placeId: 'p1', name: '성수 찐국밥', address: '서울 성동구 성수동2가 300-1', region: 'seongsu');
-const far = PlaceResult(placeId: 'far', name: '강남 찐돈까스', address: '서울 강남구 역삼동 100', region: null);
+const p1 = PlaceResult(placeId: 'p1', name: '성수 찐국밥', address: '서울 성동구 성수동2가 300-1', category: '한식 · 국밥', region: 'seongsu');
+const far = PlaceResult(placeId: 'far', name: '강남 찐돈까스', address: '서울 강남구 역삼동 100', category: '일식 · 돈까스', region: null);
 
 Restaurant rest(String id, String name) => Restaurant(id: id, name: name, address: '서울', region: 'seongsu');
 
@@ -161,6 +161,56 @@ void main() {
     await tester.pumpAndSettle();
     final nextBtn = tester.widget<FilledButton>(find.widgetWithText(FilledButton, '다음'));
     expect(nextBtn.onPressed, isNull);
+  });
+
+  testWidgets('검색 결과에 업종과 주소가 보이고, 선택하면 체크 표시', (tester) async {
+    await tester.pumpWidget(screen(backend()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '찐');
+    await tester.tap(find.text('검색'));
+    await tester.pumpAndSettle();
+    expect(find.text('한식 · 국밥'), findsOneWidget);
+    expect(find.text('서울 성동구 성수동2가 300-1'), findsOneWidget);
+    expect(find.byIcon(Icons.check), findsNothing);
+    await tester.tap(find.text('성수 찐국밥'));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.check), findsOneWidget);
+  });
+
+  testWidgets('검색 결과가 없으면 안내 문구', (tester) async {
+    final b = backend()..places = [];
+    await tester.pumpWidget(screen(b));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('검색 결과가 없어요'), findsNothing); // 검색 전에는 안내 없음
+    await tester.enterText(find.byType(TextField), '없는집');
+    await tester.tap(find.text('검색'));
+    await tester.pumpAndSettle();
+    expect(find.text('검색 결과가 없어요'), findsOneWidget);
+    expect(b.searched, ['없는집']);
+  });
+
+  testWidgets('검색 실패는 이유를 보여 주고 다시 검색 가능', (tester) async {
+    final b = backend()..searchError = FirebaseFunctionsException(message: 'kakao_unavailable', code: 'unavailable');
+    await tester.pumpWidget(screen(b));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '찐');
+    await tester.tap(find.text('검색'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('식당 검색이 잠시 안 돼요'), findsOneWidget);
+    b.searchError = null;
+    await tester.tap(find.text('검색'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('식당 검색이 잠시 안 돼요'), findsNothing);
+    expect(find.text('성수 찐국밥'), findsOneWidget);
+  });
+
+  testWidgets('빈 검색어는 검색하지 않음', (tester) async {
+    final b = backend();
+    await tester.pumpWidget(screen(b));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('검색'));
+    await tester.pumpAndSettle();
+    expect(b.searched, isEmpty);
   });
 
   testWidgets('단계별 필수 입력: 영수증·등급·한줄평', (tester) async {

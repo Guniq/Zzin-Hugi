@@ -56,9 +56,11 @@ void main() {
   });
 
   test('PlaceResult 파싱', () {
-    final p = PlaceResult.fromMap({'placeId': 'k1', 'name': '찐', 'address': '서울', 'region': null, 'lat': 37.5});
+    final p = PlaceResult.fromMap({'placeId': 'k1', 'name': '찐', 'address': '서울', 'region': null, 'lat': 37.5, 'category': '한식 · 국밥'});
     expect(p.region, isNull);
     expect(p.name, '찐');
+    expect(p.category, '한식 · 국밥');
+    expect(PlaceResult.fromMap({'placeId': 'k2', 'name': 'x'}).category, '');
   });
 
   test('Crown 파싱', () {

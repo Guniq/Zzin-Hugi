@@ -1,8 +1,12 @@
 export interface LatLng { lat: number; lng: number }
-export interface KakaoPlace { placeId: string; name: string; address: string; roadAddress: string; lat: number; lng: number }
+export interface KakaoPlace { placeId: string; name: string; address: string; roadAddress: string; category: string; lat: number; lng: number }
 export interface KakaoProfile { id: string; nickname: string | null }
 
 const FOOD_CATEGORIES = new Set(['FD6', 'CE7']);
+
+// "음식점 > 한식 > 국밥" → "한식 · 국밥", "음식점 > 카페" → "카페"
+const categoryOf = (name: unknown): string =>
+  typeof name === 'string' ? name.split('>').map((s) => s.trim()).slice(1).join(' · ') : '';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function parseKakaoKeyword(json: unknown): KakaoPlace[] {
@@ -13,6 +17,7 @@ export function parseKakaoKeyword(json: unknown): KakaoPlace[] {
       name: d.place_name,
       address: d.address_name ?? '',
       roadAddress: d.road_address_name ?? '',
+      category: categoryOf(d.category_name),
       lat: Number(d.y),
       lng: Number(d.x),
     }));
@@ -24,6 +29,7 @@ export async function kakaoKeywordSearch(query: string, near: LatLng | null, res
     p.set('x', String(near.lng));
     p.set('y', String(near.lat));
     p.set('radius', '20000');
+    p.set('sort', 'distance');
   }
   const res = await fetchFn(`https://dapi.kakao.com/v2/local/search/keyword.json?${p}`, {
     headers: { Authorization: `KakaoAK ${restKey}` },

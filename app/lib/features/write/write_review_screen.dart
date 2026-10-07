@@ -36,6 +36,8 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
   int _stars = 5;
   List<XFile> _photos = [];
   bool _busy = false;
+  bool _searching = false;
+  bool _searched = false;
   String? _error;
 
   @override
@@ -64,14 +66,24 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
   Future<void> _search() async {
     final q = _query.text.trim();
     if (q.isEmpty) return;
-    setState(() => _error = null);
+    setState(() {
+      _error = null;
+      _searching = true;
+    });
     try {
       final r = await ref.read(backendProvider).searchPlaces(q);
-      if (mounted) setState(() => _results = r);
+      if (mounted) {
+        setState(() {
+          _results = r;
+          _searched = true;
+        });
+      }
     } on FirebaseFunctionsException catch (e) {
       if (mounted) setState(() => _error = reviewErrorText(e.message));
     } catch (_) {
       if (mounted) setState(() => _error = reviewErrorText(null));
+    } finally {
+      if (mounted) setState(() => _searching = false);
     }
   }
 
@@ -238,23 +250,38 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
               Expanded(
                 child: TextField(
                   controller: _query,
-                  decoration: const InputDecoration(labelText: '식당 이름'),
+                  textInputAction: TextInputAction.search,
+                  decoration: const InputDecoration(
+                    labelText: '식당 이름',
+                    prefixIcon: Icon(Icons.search),
+                  ),
                   onSubmitted: (_) => _search(),
                 ),
               ),
               const SizedBox(width: 8),
-              FilledButton(onPressed: _search, child: const Text('검색')),
+              FilledButton(onPressed: _searching ? null : _search, child: const Text('검색')),
             ],
           ),
-          const SizedBox(height: 8),
-          for (final p in _results)
-            ListTile(
-              selected: _place?.placeId == p.placeId,
-              selectedColor: AppColors.ink,
-              title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text(p.region == null ? '베타 지역 아님' : p.address),
-              trailing: _place?.placeId == p.placeId ? const Icon(Icons.check) : null,
-              onTap: () => setState(() => _place = p),
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text('성수 주변을 먼저 보여 드려요. 지역 이름도 함께 검색하면 더 정확해요.', style: TextStyle(fontSize: 13, color: AppColors.sub)),
+          ),
+          const SizedBox(height: 16),
+          if (_searching)
+            const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Center(child: CircularProgressIndicator()))
+          else if (_searched && _results.isEmpty && _error == null)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text('검색 결과가 없어요', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+            ),
+          for (final p in _results) _PlaceTile(place: p, selected: _place?.placeId == p.placeId, onTap: () => setState(() => _place = p)),
+          if (_searched && _results.isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                '찾는 식당이 없나요? 이름을 조금 다르게 검색해 보세요. 지금은 성수 지역 식당만 후기를 쓸 수 있어요.',
+                style: TextStyle(fontSize: 13, height: 1.55, color: AppColors.sub),
+              ),
             ),
         ],
       );
@@ -518,6 +545,79 @@ class _CompareCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(action, style: TextStyle(fontSize: 14, color: sub)),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlaceTile extends StatelessWidget {
+  const _PlaceTile({required this.place, required this.selected, required this.onTap});
+  final PlaceResult place;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final blocked = place.region == null;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: blocked ? AppColors.ground : AppColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(
+            color: selected ? AppColors.ink : (blocked ? AppColors.border : AppColors.line),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            place.name,
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: blocked ? AppColors.sub : AppColors.ink),
+                          ),
+                          if (place.category.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: blocked ? AppColors.card : AppColors.ground,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(place.category, style: const TextStyle(fontSize: 12, color: AppColors.sub)),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(place.address, style: const TextStyle(fontSize: 13, color: AppColors.sub)),
+                    ],
+                  ),
+                ),
+                if (blocked)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: AppColors.line, borderRadius: BorderRadius.circular(12)),
+                    child: const Text('베타 지역 아님', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.sub)),
+                  )
+                else if (selected)
+                  const Icon(Icons.check, color: AppColors.ok),
+              ],
+            ),
           ),
         ),
       ),

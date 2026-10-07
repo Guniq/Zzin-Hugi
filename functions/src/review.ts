@@ -5,7 +5,7 @@ import { Tier, TIERS, Ranking, emptyRanking, insertPlace, scoreChanges, scoresOf
 import { OcrReceipt, PlaceInfo, verifyReceipt, kstDate } from './receipt';
 import { clovaOcr } from './ocr';
 import { REGION, CLOVA_OCR_SECRET, CLOVA_OCR_URL } from './config';
-import { isFake, fakeOcr } from './dev/fake';
+import { isFakeOcr, fakeOcr } from './dev/fake';
 
 export const DAILY_REVIEW_LIMIT = 5;
 
@@ -118,7 +118,7 @@ export async function submitReviewCore(db: Firestore, deps: SubmitDeps, uid: str
 
 export const submitReview = onCall({ region: REGION, secrets: [CLOVA_OCR_SECRET], timeoutSeconds: 60 }, (req) => {
   if (!req.auth) throw new HttpsError('unauthenticated', 'login_required');
-  const ocr = isFake()
+  const ocr = isFakeOcr()
     ? async (path: string, place: PlaceInfo) => fakeOcr(path, place)
     : async (path: string) => {
         const [buf] = await getStorage().bucket().file(path).download();

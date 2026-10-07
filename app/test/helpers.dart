@@ -42,6 +42,7 @@ class FakeBackend extends Fake implements Backend {
   Crown? crown;
   SubmitInput? lastSubmit;
   Object? submitError;
+  Object? searchError;
   final likeCalls = <(String, bool)>[];
   final reports = <(String, String)>[];
   final uploads = <String>[];
@@ -65,6 +66,7 @@ class FakeBackend extends Fake implements Backend {
   @override
   Future<List<PlaceResult>> searchPlaces(String query) async {
     searched.add(query);
+    if (searchError != null) throw searchError!;
     return places;
   }
 

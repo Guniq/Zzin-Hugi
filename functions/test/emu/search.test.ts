@@ -1,12 +1,12 @@
 import { testDb, clearFirestore } from './helpers';
-import { searchPlacesCore } from '../../src/search';
+import { searchPlacesCore, DEFAULT_NEAR } from '../../src/search';
 import { KakaoPlace } from '../../src/kakao';
 
 const db = testDb();
 const NOW = new Date('2026-10-07T03:00:00Z');
 const places: KakaoPlace[] = [
-  { placeId: '111', name: '성수 찐국밥', address: '서울 성동구 성수동2가 300-1', roadAddress: '서울 성동구 연무장길 10', lat: 37.54, lng: 127.05 },
-  { placeId: '999', name: '강남 찐면', address: '서울 강남구 역삼동 1', roadAddress: '', lat: 37.5, lng: 127.03 },
+  { placeId: '111', name: '성수 찐국밥', address: '서울 성동구 성수동2가 300-1', roadAddress: '서울 성동구 연무장길 10', category: '한식 · 국밥', lat: 37.54, lng: 127.05 },
+  { placeId: '999', name: '강남 찐면', address: '서울 강남구 역삼동 1', roadAddress: '', category: '일식 · 면요리', lat: 37.5, lng: 127.03 },
 ];
 
 beforeEach(async () => {
@@ -22,6 +22,15 @@ test('카카오 결과를 지역 판정 후 반환하고 식당 문서 생성', 
   const doc = (await db.doc('restaurants/111').get()).data()!;
   expect(doc).toMatchObject({ name: '성수 찐국밥', region: 'seongsu', roadAddress: '서울 성동구 연무장길 10' });
   expect(typeof doc.geohash).toBe('string');
+  expect(doc.category).toBe('한식 · 국밥');
+  expect(res[0].category).toBe('한식 · 국밥');
+});
+
+test('위치가 없으면 베타 지역 중심으로 검색', async () => {
+  const kakao = jest.fn().mockResolvedValue(places);
+  await searchPlacesCore(db, kakao, { query: '찐' }, NOW);
+  expect(kakao).toHaveBeenCalledWith('찐', DEFAULT_NEAR);
+  expect(DEFAULT_NEAR).toEqual({ lat: 37.5446, lng: 127.0557 });
 });
 
 test('7일 내 같은 검색은 캐시 사용', async () => {

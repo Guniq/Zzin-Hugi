@@ -1,32 +1,52 @@
-import { isFake, fakeKakaoSearch, fakeOcr, FAKE_PLACES } from '../../src/dev/fake';
+import { isFakeOcr, isFakeKakao, fakeKakaoSearch, fakeOcr, FAKE_PLACES } from '../../src/dev/fake';
 import { verifyReceipt } from '../../src/receipt';
 import { regionFor } from '../../src/address';
 import { SEED_REGIONS } from '../../src/dev/seed';
 
 const NOW = new Date('2026-10-07T03:00:00Z');
 
-describe('isFake', () => {
-  const saved = { f: process.env.FAKE_EXTERNALS, e: process.env.FUNCTIONS_EMULATOR };
+describe('가짜 모드 플래그', () => {
+  const saved = { f: process.env.FAKE_EXTERNALS, e: process.env.FUNCTIONS_EMULATOR, k: process.env.FAKE_KAKAO };
   afterEach(() => {
     if (saved.f === undefined) delete process.env.FAKE_EXTERNALS;
     else process.env.FAKE_EXTERNALS = saved.f;
     if (saved.e === undefined) delete process.env.FUNCTIONS_EMULATOR;
     else process.env.FUNCTIONS_EMULATOR = saved.e;
+    if (saved.k === undefined) delete process.env.FAKE_KAKAO;
+    else process.env.FAKE_KAKAO = saved.k;
   });
   test('에뮬레이터가 아니면 FAKE_EXTERNALS가 켜져 있어도 false', () => {
     process.env.FAKE_EXTERNALS = 'true';
     delete process.env.FUNCTIONS_EMULATOR;
-    expect(isFake()).toBe(false);
+    expect(isFakeOcr()).toBe(false);
+    expect(isFakeKakao()).toBe(false);
   });
-  test('에뮬레이터 + FAKE_EXTERNALS면 true', () => {
+  test('에뮬레이터 + FAKE_EXTERNALS면 둘 다 true', () => {
     process.env.FAKE_EXTERNALS = 'true';
     process.env.FUNCTIONS_EMULATOR = 'true';
-    expect(isFake()).toBe(true);
+    delete process.env.FAKE_KAKAO;
+    expect(isFakeOcr()).toBe(true);
+    expect(isFakeKakao()).toBe(true);
+  });
+  test('FAKE_KAKAO=false 면 검색만 진짜, 영수증은 가짜', () => {
+    process.env.FAKE_EXTERNALS = 'true';
+    process.env.FUNCTIONS_EMULATOR = 'true';
+    process.env.FAKE_KAKAO = 'false';
+    expect(isFakeKakao()).toBe(false);
+    expect(isFakeOcr()).toBe(true);
+  });
+  test('FAKE_KAKAO=false 여도 에뮬레이터가 아니면 둘 다 false', () => {
+    process.env.FAKE_EXTERNALS = 'true';
+    delete process.env.FUNCTIONS_EMULATOR;
+    process.env.FAKE_KAKAO = 'false';
+    expect(isFakeOcr()).toBe(false);
+    expect(isFakeKakao()).toBe(false);
   });
   test('에뮬레이터여도 FAKE_EXTERNALS 없으면 false', () => {
     delete process.env.FAKE_EXTERNALS;
     process.env.FUNCTIONS_EMULATOR = 'true';
-    expect(isFake()).toBe(false);
+    expect(isFakeOcr()).toBe(false);
+    expect(isFakeKakao()).toBe(false);
   });
 });
 
