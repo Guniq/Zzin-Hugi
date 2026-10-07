@@ -35,10 +35,17 @@ test('위치가 없으면 베타 지역 중심으로 검색', async () => {
 
 test('7일 내 같은 검색은 캐시 사용', async () => {
   const kakao = jest.fn().mockResolvedValue(places);
-  await searchPlacesCore(db, kakao, { query: '찐', lat: 37.501, lng: 127.001 }, NOW);
-  const res = await searchPlacesCore(db, kakao, { query: '찐', lat: 37.502, lng: 127.002 }, new Date(NOW.getTime() + 6 * 86_400_000));
+  await searchPlacesCore(db, kakao, { query: '찐', lat: 37.5011, lng: 127.0011 }, NOW);
+  const res = await searchPlacesCore(db, kakao, { query: '찐', lat: 37.5012, lng: 127.0012 }, new Date(NOW.getTime() + 6 * 86_400_000));
   expect(kakao).toHaveBeenCalledTimes(1);
   expect(res.map((r) => r.placeId).sort()).toEqual(['111', '999']);
+});
+
+test('약 400m 이상 떨어진 위치는 캐시를 공유하지 않음 (지도 재검색)', async () => {
+  const kakao = jest.fn().mockResolvedValue(places);
+  await searchPlacesCore(db, kakao, { query: '찐', lat: 37.5012, lng: 127.0012 }, NOW);
+  await searchPlacesCore(db, kakao, { query: '찐', lat: 37.5049, lng: 127.0012 }, NOW);
+  expect(kakao).toHaveBeenCalledTimes(2);
 });
 
 test('7일 지나면 다시 호출', async () => {

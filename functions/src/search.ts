@@ -26,7 +26,7 @@ export async function searchPlacesCore(db: Firestore, kakao: KakaoSearch, raw: u
   const near: LatLng =
     typeof d.lat === 'number' && typeof d.lng === 'number' && Number.isFinite(d.lat) && Number.isFinite(d.lng) ? { lat: d.lat, lng: d.lng } : DEFAULT_NEAR;
 
-  const key = createHash('sha256').update(`${query}|${near.lat.toFixed(2)},${near.lng.toFixed(2)}`).digest('hex');
+  const key = createHash('sha256').update(`${query}|${near.lat.toFixed(3)},${near.lng.toFixed(3)}`).digest('hex');
   const cacheRef = db.doc(`searchCache/${key}`);
   const cached = (await cacheRef.get()).data();
   if (cached && now.getTime() - cached.cachedAt.toMillis() < CACHE_DAYS * 86_400_000) {
