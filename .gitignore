@@ -6,3 +6,5 @@ functions/lib/
 *-debug.log
 functions/.env.local
 functions/.secret.local
+api-key*.txt
+*.secret
