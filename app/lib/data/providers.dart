@@ -28,6 +28,8 @@ final restaurantProvider =
 final reviewsProvider = StreamProvider.family<List<Review>, (String, ReviewSort)>(
   (ref, k) => ref.watch(backendProvider).watchReviews(k.$1, k.$2),
 );
+final userReviewsProvider =
+    StreamProvider.family<List<Review>, String>((ref, uid) => ref.watch(backendProvider).watchUserReviews(uid));
 final userProvider = StreamProvider.family<AppUser?, String>((ref, uid) => ref.watch(backendProvider).watchUser(uid));
 final likedProvider = StreamProvider.family<bool, String>((ref, id) => ref.watch(backendProvider).watchLiked(id));
 final crownProvider = FutureProvider.family<Crown?, String>(

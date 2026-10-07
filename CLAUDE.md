@@ -54,7 +54,7 @@ functions/                Cloud Functions (TypeScript, Jest)
   src/dev/                에뮬레이터 전용 가짜 검색·OCR(fake.ts), 데모 데이터(seed.ts)
   scripts/                dev-setup.js(.env.local/.secret.local 생성), with-java21.js
 app/                      Flutter (웹 우선, Riverpod, go_router)
-  lib/domain/             점수 표기·이진 비교 순위(ranking_session)·오류 문구·모델
+  lib/domain/             점수 표기·오류 문구·모델
   lib/data/               Backend 인터페이스(FirebaseBackend), AuthService
   lib/features/           login, home, restaurant, write(+map/), profile
   lib/ui/                 theme, gauge(거품 게이지), widgets
@@ -79,8 +79,7 @@ npm --prefix functions run serve:web    # → http://localhost:5050
 
 ## 핵심 결정과 이유
 
-- **영수증 인증 + 이벤트 참여 자기신고 + 비교형 평가**. 별점 대신 같은 등급 안에서 이진 비교로 순위를 정한다(`ranking_session`).
-  개인 점수: 최고 7~10 / 괜찮 4~7 / 별로 0~4, 순위로 보간. 찐점수=인증 후기 평균, 거품=이벤트점수−찐점수, 3개 미만이면 "데이터 부족".
+- **영수증 인증 + 이벤트 참여 자기신고 + 별점 비교**. 모두 실제 별점(1~5)을 매기고, 이벤트 참여자는 이벤트 때 준 별점도 함께 매겨 나란히 비교한다. 거품 = 이벤트 참여자 각자의 (이벤트 별점 − 실제 별점) 평균, 찐점수 = 실제 별점 평균(3개 이상). 최고/괜찮/별로 등급·이진 비교는 폐기.
 - **후기 쓰기는 서버 함수 경유만**(클라이언트 직접 쓰기 금지). 따봉·신고만 클라이언트가 직접 쓰고 보안 규칙으로 막는다.
 - **에뮬레이터 전용 가짜 모드**: `FAKE_EXTERNALS=true` 이고 `FUNCTIONS_EMULATOR=true` 일 때만 켜진다(실서버에서는 절대 안 켜짐). 검색은 `FAKE_KAKAO=false` 로 따로 진짜로 바꾼다.
 - **Firebase JS SDK 웹 에뮬레이터 문제**: 저장된 세션 복원이 에뮬레이터 연결보다 먼저 실서버로 나가 로그인이 풀린다. 그래서 에뮬레이터 모드에서는
@@ -94,7 +93,7 @@ npm --prefix functions run serve:web    # → http://localhost:5050
 
 ## 환경 주의 (Windows)
 
-- Flutter SDK: `C:\src\flutter` (사용자 PATH 등록, 새 터미널 필요). **JDK 21** `C:\Program Files\Java\jdk-21` — firebase-tools 15 에뮬레이터에 필요하며 `with-java21.js` 가 PATH 앞에 붙여 준다(기본 java 는 11).
+- Flutter SDK: `D:\src\flutter` (사용자 PATH 등록, 새 터미널 필요). **JDK 21** `C:\Program Files\Java\jdk-21` — firebase-tools 15 에뮬레이터에 필요하며 `with-java21.js` 가 PATH 앞에 붙여 준다(기본 java 는 11).
 - Git Bash 에서 **큰 heredoc 이 파싱 오류**를 내는 경우가 있다. 긴 파일은 Write/Edit 도구로 쓴다. 한글 문자열에 `\n` 을 넣을 때 python heredoc 으로 편집하면 실제 줄바꿈이 들어가 깨진다.
 - 에뮬레이터를 파이프로 `grep` 하면 프로세스가 남아 다음 실행에서 `port taken` 이 난다. 로그 파일로 돌리고, 끝나면 4000/4400/5001/5050/8080/9099/9199 포트를 쓰는 프로세스를 종료한다.
 - Node 24 에서 `MetadataLookupWarning` 이 나오지만 무해하다.

@@ -5,7 +5,6 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { KakaoProfile, kakaoMe } from './kakao';
 import { kakaoAuthorizeUrl, kakaoExchangeCode } from './kakaoOauth';
 import { isFakeKakao, fakeAuthorizeUrl, fakeExchange, fakeKakaoMe } from './dev/fake';
-import { emptyRanking } from './scoring';
 import { titleFor } from './title';
 import { REGION, KAKAO_REST_KEY, KAKAO_CLIENT_SECRET } from './config';
 
@@ -15,7 +14,6 @@ export function newUserDoc(displayName: string | undefined, rand: () => number =
     title: titleFor(0),
     likesReceived: 0,
     verifiedReviewCount: 0,
-    ranking: emptyRanking(),
     dailyReviewCount: 0,
     dailyReviewDate: '',
     createdAt: FieldValue.serverTimestamp(),

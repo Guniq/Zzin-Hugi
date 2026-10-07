@@ -26,7 +26,9 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     final r = ref.watch(restaurantProvider(widget.id)).value;
     final reviews = ref.watch(reviewsProvider((widget.id, _sort)));
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [IconButton(tooltip: '홈', icon: const Icon(Icons.home_outlined), onPressed: () => context.go('/'))],
+      ),
       body: r == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(

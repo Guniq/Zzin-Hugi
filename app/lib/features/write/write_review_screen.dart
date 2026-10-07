@@ -8,8 +8,6 @@ import '../../core/regions.dart';
 import '../../data/providers.dart';
 import '../../domain/errors.dart';
 import '../../domain/models.dart';
-import '../../domain/ranking_session.dart';
-import '../../domain/score.dart';
 import '../../ui/theme.dart';
 import 'map/place_map_picker.dart';
 
@@ -22,8 +20,8 @@ class WriteReviewScreen extends ConsumerStatefulWidget {
 }
 
 class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
-  static const _lastStep = 5;
-  static const _eyebrows = ['식당 찾기', '영수증 인증', '솔직한 느낌', '순위 정하기', '리뷰 이벤트', '한줄평'];
+  static const _lastStep = 3;
+  static const _eyebrows = ['식당 찾기', '영수증 인증', '별점 매기기', '한줄평'];
 
   int _step = 0;
   PlaceResult? _place;
@@ -31,11 +29,11 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
   final _query = TextEditingController();
   final _text = TextEditingController();
   XFile? _receipt;
-  Tier? _tier;
-  Map<String, Restaurant> _names = {};
-  RankingSession? _session;
   bool _eventJoined = false;
-  int _stars = 5;
+  /// 내 실제 별점(0 = 아직 안 고름)
+  int _stars = 0;
+  /// 리뷰 이벤트 때 준 별점
+  int _eventStars = 5;
   List<XFile> _photos = [];
   bool _busy = false;
   bool _searching = false;
@@ -61,9 +59,7 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
   bool get _canNext => switch (_step) {
         0 => _place != null && _place!.region != null,
         1 => _receipt != null,
-        2 => _tier != null,
-        3 => _session?.done ?? false,
-        4 => true,
+        2 => _stars >= 1,
         _ => _text.text.trim().length >= 10 && _text.text.trim().length <= 300,
       };
 
@@ -91,20 +87,7 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
     }
   }
 
-  Future<void> _prepareCompare() async {
-    final backend = ref.read(backendProvider);
-    final uid = ref.read(authServiceProvider).currentUid!;
-    final user = await backend.watchUser(uid).first;
-    final ids = [
-      for (final id in user?.ranking[_tier!] ?? const <String>[])
-        if (id != _place!.placeId) id
-    ];
-    _names = ids.isEmpty ? <String, Restaurant>{} : await backend.getRestaurants(ids);
-    _session = RankingSession(ids);
-  }
-
   Future<void> _next() async {
-    if (_step == 2) await _prepareCompare();
     if (mounted) setState(() => _step++);
   }
 
@@ -123,10 +106,9 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
       await backend.submitReview(SubmitInput(
         placeId: _place!.placeId,
         receiptPath: receiptPath,
-        tier: _tier!,
-        rankIndex: _session!.index,
+        stars: _stars,
         eventJoined: _eventJoined,
-        eventStars: _eventJoined ? _stars : null,
+        eventStars: _eventJoined ? _eventStars : null,
         text: _text.text.trim(),
         photos: photoPaths,
       ));
@@ -254,9 +236,7 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
   Widget _page() => switch (_step) {
         0 => _searchStep(),
         1 => _receiptStep(),
-        2 => _tierStep(),
-        3 => _compareStep(),
-        4 => _eventStep(),
+        2 => _starsStep(),
         _ => _textStep(),
       };
 
@@ -369,135 +349,73 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
         ],
       );
 
-  Widget _tierStep() => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _starRow(String keyPrefix, int value, ValueChanged<int> onChanged, {Color color = AppColors.ink}) => Row(
         children: [
-          _heading(
-            '${_place?.name ?? ''},\n어땠나요?',
-            '리뷰 이벤트 서비스와 상관없이, 솔직한 느낌으로 골라 주세요.',
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 12,
-            children: [
-              for (final t in Tier.values)
-                ChoiceChip(
-                  label: Text(t.label),
-                  selected: _tier == t,
-                  showCheckmark: false,
-                  selectedColor: AppColors.ink,
-                  backgroundColor: AppColors.card,
-                  labelStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: _tier == t ? Colors.white : AppColors.ink,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                  shape: const StadiumBorder(side: BorderSide(color: AppColors.border)),
-                  onSelected: (_) => setState(() {
-                    _tier = t;
-                    _session = null;
-                  }),
-                ),
-            ],
-          ),
+          for (var n = 1; n <= 5; n++)
+            IconButton(
+              key: Key('$keyPrefix-$n'),
+              iconSize: 36,
+              color: color,
+              icon: Icon(n <= value ? Icons.star : Icons.star_border),
+              onPressed: () => onChanged(n),
+            ),
         ],
       );
 
-  Widget _compareStep() {
-    final s = _session;
-    if (s == null) return const SizedBox.shrink();
-    if (s.candidates.isEmpty) {
-      return _heading('같은 등급에 비교할 식당이 아직 없어요', '이 식당이 첫 번째로 기록돼요.');
-    }
-    if (s.done) {
-      return _heading('순위가 정해졌어요 (${_tier!.label} 등급 ${s.index + 1}번째)');
-    }
-    final cur = s.current!;
-    final curName = _names[cur]?.name ?? cur;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _heading('어느 쪽이\n더 좋았나요?', '별점 대신 비교로 순위를 정해요. 더 좋았던 쪽을 눌러 주세요.'),
-        const SizedBox(height: 24),
-        _CompareCard(
-          dark: true,
-          caption: '방금 다녀온 식당',
-          name: _place?.name ?? '',
-          action: '이번 식당이 더 좋았어요',
-          onTap: () => setState(() => s.answer(newIsBetter: true)),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          child: Row(
-            children: [
-              Expanded(child: Divider()),
-              Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('VS', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.sub))),
-              Expanded(child: Divider()),
-            ],
-          ),
-        ),
-        _CompareCard(
-          dark: false,
-          caption: '내가 이미 평가한 식당',
-          name: curName,
-          action: '비교 식당이 더 좋았어요',
-          onTap: () => setState(() => s.answer(newIsBetter: false)),
-        ),
-      ],
-    );
-  }
-
-  Widget _eventStep() => Column(
+  Widget _starsStep() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _heading(
-            '리뷰 이벤트에\n참여했나요?',
-            '음료·서비스를 받고 리뷰를 쓴 적이 있다면 알려 주세요. 솔직하게 알려 주실수록 이 식당의 찐점수가 정확해져요.',
+            '${_place?.name ?? ''},\n몇 점이었나요?',
+            '리뷰 이벤트 서비스와 상관없이, 솔직한 내 별점을 주세요.',
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          const Text('내 실제 별점', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          _starRow('real', _stars, (n) => setState(() => _stars = n)),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
             decoration: BoxDecoration(color: AppColors.ground, borderRadius: BorderRadius.circular(16)),
             child: Row(
               children: [
-                const Expanded(child: Text('이벤트에 참여했어요', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+                const Expanded(child: Text('리뷰 이벤트에 참여했어요', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
                 Switch(value: _eventJoined, onChanged: (v) => setState(() => _eventJoined = v)),
               ],
             ),
           ),
           if (_eventJoined) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             const Text('이벤트 때 준 별점', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                for (var n = 1; n <= 5; n++)
-                  IconButton(
-                    key: Key('star-$n'),
-                    iconSize: 36,
-                    color: AppColors.accent,
-                    icon: Icon(n <= _stars ? Icons.star : Icons.star_border),
-                    onPressed: () => setState(() => _stars = n),
-                  ),
-              ],
-            ),
+            _starRow('star', _eventStars, (n) => setState(() => _eventStars = n), color: AppColors.accent),
+            if (_stars >= 1) _comparePreview(),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
             decoration: BoxDecoration(color: AppColors.accentSoft, borderRadius: BorderRadius.circular(16)),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('이 점수는 거품지수에만 쓰여요', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accentText)),
+                Text('두 별점의 차이가 거품이에요', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accentText)),
                 SizedBox(height: 4),
-                Text('이벤트 별점과 내가 매긴 순위의 차이로 이 식당의 거품이 계산돼요. 내 찐점수에는 영향이 없어요.', style: TextStyle(fontSize: 14, height: 1.55)),
+                Text('이벤트 때 준 별점과 실제 별점을 같은 사람끼리 비교해 이 식당의 거품지수를 계산해요. 찐점수에는 실제 별점만 쓰여요.', style: TextStyle(fontSize: 14, height: 1.55)),
               ],
             ),
           ),
         ],
       );
+
+  Widget _comparePreview() {
+    final gap = _eventStars - _stars;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(
+        '이벤트 ★$_eventStars → 실제 ★$_stars  (${gap > 0 ? '거품 +$gap' : gap == 0 ? '차이 없음' : '실제가 더 높아요'})',
+        key: const Key('compare-preview'),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
 
   Widget _textStep() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -541,45 +459,6 @@ class _Fact extends StatelessWidget {
           ],
         ),
       );
-}
-
-class _CompareCard extends StatelessWidget {
-  const _CompareCard({required this.dark, required this.caption, required this.name, required this.action, required this.onTap});
-  final bool dark;
-  final String caption;
-  final String name;
-  final String action;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final fg = dark ? Colors.white : AppColors.ink;
-    final sub = dark ? const Color(0xFFC9CDD2) : AppColors.sub;
-    return Material(
-      color: dark ? AppColors.ink : AppColors.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: dark ? AppColors.ink : AppColors.border, width: 2),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(caption, style: TextStyle(fontSize: 12, color: sub)),
-              const SizedBox(height: 4),
-              Text(name, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: fg)),
-              const SizedBox(height: 6),
-              Text(action, style: TextStyle(fontSize: 14, color: sub)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _PlaceTile extends StatelessWidget {

@@ -63,6 +63,8 @@ class FakeBackend extends Fake implements Backend {
   @override
   Stream<List<Review>> watchReviews(String restaurantId, ReviewSort sort) => Stream.value(reviews);
   @override
+  Stream<List<Review>> watchUserReviews(String uid) => Stream.value([for (final r in reviews) if (r.uid == uid) r]);
+  @override
   Stream<AppUser?> watchUser(String uid) => Stream.value(users[uid]);
   @override
   Future<Map<String, Restaurant>> getRestaurants(List<String> ids) async => {
@@ -127,10 +129,9 @@ Widget harness({
   );
 }
 
-AppUser appUser(String uid, {int verified = 1, Map<String, List<String>> ranking = const {}}) => AppUser.fromMap(uid, {
+AppUser appUser(String uid, {int verified = 1}) => AppUser.fromMap(uid, {
       'nickname': '닉-$uid',
       'title': '찐린이',
       'likesReceived': 0,
       'verifiedReviewCount': verified,
-      'ranking': ranking,
     });

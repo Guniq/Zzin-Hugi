@@ -14,6 +14,7 @@ abstract class Backend {
   Stream<Restaurant?> watchRestaurant(String id);
   Stream<List<Review>> watchReviews(String restaurantId, ReviewSort sort);
   Stream<AppUser?> watchUser(String uid);
+  Stream<List<Review>> watchUserReviews(String uid);
   Future<Map<String, Restaurant>> getRestaurants(List<String> ids);
   Future<Crown?> getCrown(String region, String month);
   Future<List<PlaceResult>> searchPlaces(String query, {double? lat, double? lng});
@@ -47,6 +48,14 @@ class FirebaseBackend implements Backend {
       .collection('reviews')
       .where('restaurantId', isEqualTo: restaurantId)
       .orderBy(sort == ReviewSort.likes ? 'likeCount' : 'createdAt', descending: true)
+      .snapshots()
+      .map((s) => [for (final d in s.docs) Review.fromMap(d.id, d.data())]);
+
+  @override
+  Stream<List<Review>> watchUserReviews(String uid) => _db
+      .collection('reviews')
+      .where('uid', isEqualTo: uid)
+      .orderBy('createdAt', descending: true)
       .snapshots()
       .map((s) => [for (final d in s.docs) Review.fromMap(d.id, d.data())]);
 

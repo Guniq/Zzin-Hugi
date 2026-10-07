@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zzinhugi/data/providers.dart';
 import 'package:zzinhugi/domain/models.dart';
-import 'package:zzinhugi/domain/score.dart';
 import 'package:zzinhugi/features/write/map/place_map.dart';
 import 'package:zzinhugi/features/write/write_review_screen.dart';
 
@@ -21,10 +20,10 @@ Restaurant rest(String id, String name) => Restaurant(id: id, name: name, addres
 
 XFile fakeImage() => XFile.fromData(Uint8List.fromList([1, 2, 3]), mimeType: 'image/png', name: 'r.png');
 
-FakeBackend backend({Map<String, List<String>> ranking = const {}}) => FakeBackend()
+FakeBackend backend() => FakeBackend()
   ..places = [p1, far]
   ..restaurants = [rest('a', '가게A'), rest('b', '가게B')]
-  ..users = {'me': appUser('me', ranking: ranking)};
+  ..users = {'me': appUser('me')};
 
 Widget screen(FakeBackend b, {PlaceResult? initial}) => harness(
       child: WriteReviewScreen(initialPlace: initial),
@@ -46,8 +45,8 @@ Future<void> pickReceipt(WidgetTester t) async {
   expect(find.text('영수증 선택됨'), findsOneWidget);
 }
 
-Future<void> chooseTier(WidgetTester t, Tier tier) async {
-  await t.tap(find.widgetWithText(ChoiceChip, tier.label));
+Future<void> chooseStars(WidgetTester t, int n) async {
+  await t.tap(find.byKey(Key('real-$n')));
   await t.pumpAndSettle();
 }
 
@@ -67,8 +66,8 @@ Future<void> writeTextAndSubmit(WidgetTester t, [String text = '국물이 진하
 }
 
 void main() {
-  testWidgets('전체 흐름: 비교 후 제출하면 입력값이 계약대로 전달되고 상세로 이동', (tester) async {
-    final b = backend(ranking: {'best': ['a', 'b']});
+  testWidgets('전체 흐름: 실제 별점과 이벤트 별점을 함께 매기고 제출하면 계약대로 전달되고 상세로 이동', (tester) async {
+    final b = backend();
     await tester.pumpWidget(screen(b));
     await tester.pumpAndSettle();
 
@@ -76,24 +75,15 @@ void main() {
     await next(tester);
     await pickReceipt(tester);
     await next(tester);
-    await chooseTier(tester, Tier.best);
-    await next(tester);
 
-    // 후보 [a, b] — 첫 질문은 가운데(b), 새 식당이 더 좋다고 두 번 답하면 맨 위
-    expect(find.textContaining('가게B'), findsOneWidget);
-    await tester.tap(find.text('이번 식당이 더 좋았어요'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('가게A'), findsOneWidget);
-    await tester.tap(find.text('이번 식당이 더 좋았어요'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('순위가 정해졌어요'), findsOneWidget);
-    await next(tester);
-
+    await chooseStars(tester, 2);
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
     expect(find.text('이벤트 때 준 별점'), findsOneWidget);
     await tester.tap(find.byKey(const Key('star-4')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('compare-preview')), findsOneWidget);
+    expect(find.textContaining('이벤트 ★4 → 실제 ★2'), findsOneWidget);
     await next(tester);
 
     await tester.tap(find.text('사진 추가'));
@@ -102,8 +92,7 @@ void main() {
 
     final s = b.lastSubmit!;
     expect(s.placeId, 'p1');
-    expect(s.tier, Tier.best);
-    expect(s.rankIndex, 0);
+    expect(s.stars, 2);
     expect(s.eventJoined, isTrue);
     expect(s.eventStars, 4);
     expect(s.text, '국물이 진하고 고기가 많아요');
@@ -112,42 +101,17 @@ void main() {
     expect(find.text('detail:p1'), findsOneWidget);
   });
 
-  testWidgets('후보에서 현재 식당 제외 (같은 식당 재방문)', (tester) async {
-    final b = backend(ranking: {'best': ['p1', 'b']});
-    b.restaurants = [rest('p1', '성수 찐국밥'), rest('b', '가게B')];
-    await tester.pumpWidget(screen(b, initial: p1));
-    await tester.pumpAndSettle();
-
-    await pickReceipt(tester);
-    await next(tester);
-    await chooseTier(tester, Tier.best);
-    await next(tester);
-
-    // 후보는 [b] 하나뿐이어야 한다. 자기 자신('성수 찐국밥')과 비교하면 안 됨
-    expect(find.textContaining('가게B'), findsOneWidget);
-    expect(find.textContaining('비교 식당이 더 좋았어요'), findsOneWidget);
-    await tester.tap(find.text('비교 식당이 더 좋았어요'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('순위가 정해졌어요'), findsOneWidget);
-    await next(tester);
-    await next(tester);
-    await writeTextAndSubmit(tester);
-    expect(b.lastSubmit!.rankIndex, 1);
-  });
-
-  testWidgets('같은 등급 식당이 없으면 비교 없이 위치 0', (tester) async {
+  testWidgets('이벤트에 참여하지 않으면 이벤트 별점 없이 제출', (tester) async {
     final b = backend();
     await tester.pumpWidget(screen(b, initial: p1));
     await tester.pumpAndSettle();
     await pickReceipt(tester);
     await next(tester);
-    await chooseTier(tester, Tier.ok);
-    await next(tester);
-    expect(find.text('같은 등급에 비교할 식당이 아직 없어요'), findsOneWidget);
-    await next(tester);
+    await chooseStars(tester, 4);
+    expect(find.text('이벤트 때 준 별점'), findsNothing);
     await next(tester);
     await writeTextAndSubmit(tester);
-    expect(b.lastSubmit!.rankIndex, 0);
+    expect(b.lastSubmit!.stars, 4);
     expect(b.lastSubmit!.eventJoined, isFalse);
     expect(b.lastSubmit!.eventStars, isNull);
   });
@@ -215,16 +179,14 @@ void main() {
     expect(b.searched, isEmpty);
   });
 
-  testWidgets('단계별 필수 입력: 영수증·등급·한줄평', (tester) async {
+  testWidgets('단계별 필수 입력: 영수증·별점·한줄평', (tester) async {
     await tester.pumpWidget(screen(backend(), initial: p1));
     await tester.pumpAndSettle();
     expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, '다음')).onPressed, isNull);
     await pickReceipt(tester);
     await next(tester);
     expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, '다음')).onPressed, isNull);
-    await chooseTier(tester, Tier.bad);
-    await next(tester);
-    await next(tester);
+    await chooseStars(tester, 1);
     await next(tester);
     await tester.enterText(find.byType(TextField), '짧아요');
     await tester.pumpAndSettle();
@@ -238,9 +200,7 @@ void main() {
     await tester.pumpAndSettle();
     await pickReceipt(tester);
     await next(tester);
-    await chooseTier(tester, Tier.ok);
-    await next(tester);
-    await next(tester);
+    await chooseStars(tester, 3);
     await next(tester);
     await writeTextAndSubmit(tester, '무난하게 먹기 좋았어요 괜찮음');
 
@@ -261,9 +221,7 @@ void main() {
     await tester.pumpAndSettle();
     await pickReceipt(tester);
     await next(tester);
-    await chooseTier(tester, Tier.ok);
-    await next(tester);
-    await next(tester);
+    await chooseStars(tester, 3);
     await next(tester);
     await writeTextAndSubmit(tester);
     expect(find.textContaining('알 수 없는 오류'), findsOneWidget);

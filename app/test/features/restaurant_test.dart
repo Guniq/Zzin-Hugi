@@ -8,12 +8,12 @@ import '../helpers.dart';
 
 const place = Restaurant(
   id: 'p1', name: '성수 찐고기', address: '서울 성동구 성수동2가 31', region: 'seongsu',
-  realScore: 2.3, eventScore: 10, bubble: 7.7, reviewCount: 3, eventReviewCount: 3,
+  realScore: 2.3, eventScore: 5, bubble: 2.7, reviewCount: 3, eventReviewCount: 3,
 );
 
-Review review(String id, String uid, {Tier tier = Tier.bad, bool event = true, int likes = 2, String text = '이벤트 때문에 갔는데 별로였어요'}) =>
+Review review(String id, String uid, {int stars = 2, bool event = true, int likes = 2, String text = '이벤트 때문에 갔는데 별로였어요'}) =>
     Review(
-      id: id, uid: uid, restaurantId: 'p1', tier: tier, personalScore: 2.0, eventJoined: event,
+      id: id, uid: uid, restaurantId: 'p1', stars: stars, eventJoined: event,
       eventStars: event ? 5 : null, text: text, photos: const [], visitDate: '2026-10-06', likeCount: likes,
     );
 
@@ -40,7 +40,7 @@ void main() {
     expect(find.text('10.0'), findsOneWidget);
     expect(find.text('거품 +7.7'), findsOneWidget);
     expect(find.text('닉-other'), findsOneWidget);
-    expect(find.text('별로'), findsOneWidget);
+    expect(find.text('이벤트 ★5 → 실제 ★2'), findsWidgets);
     expect(find.text('2.0'), findsOneWidget);
     expect(find.textContaining('이벤트 참여'), findsOneWidget);
     expect(find.text('이벤트 때문에 갔는데 별로였어요'), findsOneWidget);

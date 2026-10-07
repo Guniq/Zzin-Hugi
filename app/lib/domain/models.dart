@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'score.dart';
-
 double? _d(dynamic v) => (v as num?)?.toDouble();
 int _i(dynamic v) => (v as num?)?.toInt() ?? 0;
 
@@ -81,8 +79,7 @@ class Review {
     required this.id,
     required this.uid,
     required this.restaurantId,
-    required this.tier,
-    required this.personalScore,
+    required this.stars,
     required this.eventJoined,
     this.eventStars,
     required this.text,
@@ -94,8 +91,8 @@ class Review {
   final String id;
   final String uid;
   final String restaurantId;
-  final Tier tier;
-  final double personalScore;
+  /// 내 실제 별점 1~5
+  final int stars;
   final bool eventJoined;
   final int? eventStars;
   final String text;
@@ -108,8 +105,7 @@ class Review {
         id: id,
         uid: m['uid'] as String,
         restaurantId: m['restaurantId'] as String,
-        tier: Tier.values.byName(m['tier'] as String),
-        personalScore: _d(m['personalScore']) ?? 0,
+        stars: _i(m['stars']),
         eventJoined: (m['eventJoined'] as bool?) ?? false,
         eventStars: (m['eventStars'] as num?)?.toInt(),
         text: (m['text'] as String?) ?? '',
@@ -127,24 +123,20 @@ class AppUser {
     required this.title,
     required this.likesReceived,
     required this.verifiedReviewCount,
-    required this.ranking,
   });
   final String uid;
   final String nickname;
   final String title;
   final int likesReceived;
   final int verifiedReviewCount;
-  final Map<Tier, List<String>> ranking;
 
   factory AppUser.fromMap(String uid, Map<String, dynamic> m) {
-    final r = (m['ranking'] as Map?) ?? const {};
     return AppUser(
       uid: uid,
       nickname: (m['nickname'] as String?) ?? '',
       title: (m['title'] as String?) ?? '찐린이',
       likesReceived: _i(m['likesReceived']),
       verifiedReviewCount: _i(m['verifiedReviewCount']),
-      ranking: {for (final t in Tier.values) t: List<String>.from((r[t.name] as List?) ?? const [])},
     );
   }
 }
@@ -164,8 +156,7 @@ class SubmitInput {
   const SubmitInput({
     required this.placeId,
     required this.receiptPath,
-    required this.tier,
-    required this.rankIndex,
+    required this.stars,
     required this.eventJoined,
     this.eventStars,
     required this.text,
@@ -173,8 +164,7 @@ class SubmitInput {
   });
   final String placeId;
   final String receiptPath;
-  final Tier tier;
-  final int rankIndex;
+  final int stars;
   final bool eventJoined;
   final int? eventStars;
   final String text;
@@ -183,8 +173,7 @@ class SubmitInput {
   Map<String, dynamic> toMap() => {
         'placeId': placeId,
         'receiptPath': receiptPath,
-        'tier': tier.name,
-        'rankIndex': rankIndex,
+        'stars': stars,
         'eventJoined': eventJoined,
         'eventStars': eventStars,
         'text': text,

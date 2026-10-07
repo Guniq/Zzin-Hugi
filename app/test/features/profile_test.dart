@@ -9,10 +9,13 @@ Restaurant rest(String id, String name) => Restaurant(id: id, name: name, addres
 
 FakeBackend backend() => FakeBackend()
   ..restaurants = [rest('a', '가게A'), rest('b', '가게B'), rest('c', '가게C')]
+  ..reviews = [
+    Review(id: 'seed1_a', uid: 'seed1', restaurantId: 'a', stars: 5, eventJoined: false, text: '맛있어요 정말 좋아요', photos: const [], visitDate: '2026-10-06', likeCount: 0),
+    Review(id: 'seed1_b', uid: 'seed1', restaurantId: 'b', stars: 2, eventJoined: true, eventStars: 5, text: '이벤트로 갔는데 별로', photos: const [], visitDate: '2026-10-06', likeCount: 0),
+  ]
   ..users = {
     'seed1': AppUser.fromMap('seed1', {
       'nickname': '찐미식가', 'title': '찐후기러', 'likesReceived': 16, 'verifiedReviewCount': 3,
-      'ranking': {'best': ['a', 'b'], 'ok': ['c'], 'bad': []},
     }),
   };
 
@@ -25,31 +28,20 @@ void main() {
     expect(find.text('받은 따봉 16'), findsOneWidget);
   });
 
-  testWidgets('최고 탭: 순위와 개인 점수 (백엔드와 같은 공식)', (tester) async {
+  testWidgets('내가 쓴 후기: 실제 별점과 이벤트 비교', (tester) async {
     await tester.pumpWidget(harness(child: const ProfileScreen(uid: 'seed1'), backend: backend()));
     await tester.pumpAndSettle();
-    expect(find.text('1'), findsOneWidget);
     expect(find.text('가게A'), findsOneWidget);
-    expect(find.text('9.3'), findsOneWidget);
+    expect(find.text('★ 5'), findsOneWidget);
     expect(find.text('가게B'), findsOneWidget);
-    expect(find.text('7.8'), findsOneWidget);
+    expect(find.text('이벤트 ★5 → 실제 ★2'), findsOneWidget);
   });
 
-  testWidgets('괜찮 탭으로 전환', (tester) async {
-    await tester.pumpWidget(harness(child: const ProfileScreen(uid: 'seed1'), backend: backend()));
+  testWidgets('후기가 없으면 안내', (tester) async {
+    final b = backend()..reviews = [];
+    await tester.pumpWidget(harness(child: const ProfileScreen(uid: 'seed1'), backend: b));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('괜찮'));
-    await tester.pumpAndSettle();
-    expect(find.text('가게C'), findsOneWidget);
-    expect(find.text('5.5'), findsOneWidget);
-  });
-
-  testWidgets('비어 있는 등급은 안내', (tester) async {
-    await tester.pumpWidget(harness(child: const ProfileScreen(uid: 'seed1'), backend: backend()));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('별로'));
-    await tester.pumpAndSettle();
-    expect(find.text('아직 없어요'), findsOneWidget);
+    expect(find.text('아직 쓴 후기가 없어요'), findsOneWidget);
   });
 
   testWidgets('식당을 누르면 상세로', (tester) async {

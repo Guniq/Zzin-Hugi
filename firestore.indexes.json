@@ -6,6 +6,8 @@
       { "fieldPath": "restaurantId", "order": "ASCENDING" }, { "fieldPath": "likeCount", "order": "DESCENDING" } ] },
     { "collectionGroup": "reviews", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "restaurantId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "reviews", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "uid", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
     { "collectionGroup": "restaurants", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "region", "order": "ASCENDING" }, { "fieldPath": "realScore", "order": "DESCENDING" } ] },
     { "collectionGroup": "restaurants", "queryScope": "COLLECTION", "fields": [

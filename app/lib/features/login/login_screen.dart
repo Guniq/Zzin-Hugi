@@ -99,15 +99,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ],
                         ),
                         SizedBox(height: 16),
-                        BubbleGauge(real: 2.3, event: 10),
+                        BubbleGauge(real: 2.3, event: 5),
                         SizedBox(height: 10),
                         Row(
                           children: [
                             Text('찐 2.3', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                             SizedBox(width: 10),
-                            Text('이벤트 10.0', style: TextStyle(fontSize: 13, color: AppColors.sub)),
+                            Text('이벤트 5.0', style: TextStyle(fontSize: 13, color: AppColors.sub)),
                             SizedBox(width: 10),
-                            BubbleBadge('거품 +7.7'),
+                            BubbleBadge('거품 +2.7'),
                           ],
                         ),
                       ],

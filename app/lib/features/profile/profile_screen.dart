@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../data/providers.dart';
 import '../../domain/models.dart';
-import '../../domain/score.dart';
 import '../../ui/theme.dart';
 import '../../ui/widgets.dart';
 
@@ -34,11 +33,9 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allIds = [for (final t in Tier.values) ...?user.ranking[t]];
-    final names = ref.watch(restaurantsByIdsProvider(allIds.join(','))).value ?? const {};
-    return DefaultTabController(
-      length: Tier.values.length,
-      child: Column(
+    final reviews = ref.watch(userReviewsProvider(user.uid)).value ?? const <Review>[];
+    final names = ref.watch(restaurantsByIdsProvider({for (final r in reviews) r.restaurantId}.join(','))).value ?? const {};
+    return Column(
         children: [
           Column(
             children: [
@@ -61,17 +58,11 @@ class _Body extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TabBar(tabs: [for (final t in Tier.values) Tab(text: t.label)]),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Align(alignment: Alignment.centerLeft, child: Text('내가 쓴 후기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
           ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                for (final t in Tier.values) _TierList(tier: t, ids: user.ranking[t] ?? const [], names: names),
-              ],
-            ),
-          ),
+          Expanded(child: _ReviewList(reviews: reviews, names: names)),
           if (mine)
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -84,52 +75,52 @@ class _Body extends ConsumerWidget {
               ),
             ),
         ],
-      ),
     );
   }
 }
 
-class _TierList extends StatelessWidget {
-  const _TierList({required this.tier, required this.ids, required this.names});
-  final Tier tier;
-  final List<String> ids;
+class _ReviewList extends StatelessWidget {
+  const _ReviewList({required this.reviews, required this.names});
+  final List<Review> reviews;
   final Map<String, Restaurant> names;
 
   @override
   Widget build(BuildContext context) {
-    if (ids.isEmpty) return const Center(child: Text('아직 없어요'));
+    if (reviews.isEmpty) return const Center(child: Text('아직 쓴 후기가 없어요'));
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      itemCount: ids.length,
-      itemBuilder: (_, i) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => context.push('/r/${ids[i]}'),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  SizedBox(width: 32, child: Text('${i + 1}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900))),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(names[ids[i]]?.name ?? ids[i], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                        if (names[ids[i]] != null)
-                          Text(names[ids[i]]!.address, style: const TextStyle(fontSize: 13, color: AppColors.sub)),
-                      ],
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+      itemCount: reviews.length,
+      itemBuilder: (_, i) {
+        final r = reviews[i];
+        final rest = names[r.restaurantId];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => context.push('/r/${r.restaurantId}'),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(rest?.name ?? r.restaurantId, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                          if (r.eventJoined)
+                            Text('이벤트 ★${r.eventStars} → 실제 ★${r.stars}', style: const TextStyle(fontSize: 13, color: AppColors.sub)),
+                        ],
+                      ),
                     ),
-                  ),
-                  Text(scoreText(personalScore(tier, i, ids.length)), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
-                ],
+                    Text('★ ${r.stars}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

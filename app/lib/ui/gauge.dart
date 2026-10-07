@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'theme.dart';
 
-/// 0~10 점수를 게이지 위치(0~1)로.
-double gaugeFraction(double score) => (score / 10).clamp(0.0, 1.0);
+/// 1~5 별점을 게이지 위치(0~1)로.
+double gaugeFraction(double score) => ((score - 1) / 4).clamp(0.0, 1.0);
 
 /// 거품 게이지: 속이 찬 점 = 찐점수, 빈 점 = 이벤트 점수, 둘 사이 줄무늬 = 거품.
 class BubbleGauge extends StatelessWidget {

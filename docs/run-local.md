@@ -4,7 +4,7 @@
 카카오 검색과 영수증 OCR은 에뮬레이터에서 기본 **가짜**로 동작한다(검색은 아래 "진짜 식당 검색 켜기"로 진짜로 바꿀 수 있다) (영수증은 어떤 사진이든 선택한 식당의 영수증으로 인정).
 
 ## 준비 (1회)
-- Flutter SDK (`C:\src\flutter`, PATH 등록됨 — **새 터미널**을 열어야 `flutter`가 잡힌다), Chrome, Node 22+
+- Flutter SDK (`D:\src\flutter`, PATH 등록됨 — **새 터미널**을 열어야 `flutter`가 잡힌다), Chrome, Node 22+
 - JDK 21 (`C:\Program Files\Java\jdk-21` 이거나 환경변수 `JAVA21_HOME`). 시스템 기본 java가 11이어도 `emu` 스크립트가 알아서 21을 쓴다
 - 저장소 루트(`D:\zh-project`)에서:
 ```powershell
@@ -92,7 +92,7 @@ flutter run -d chrome --dart-define=USE_EMULATOR=true
 12. **로그아웃**: 내 프로필 → 로그아웃 → 로그인 화면으로 이동.
 
 ## 막힐 때
-- `flutter` 를 못 찾음: 새 PowerShell/터미널을 연다. (또는 `$env:Path += ';C:\src\flutter\bin'`)
+- `flutter` 를 못 찾음: 새 PowerShell/터미널을 연다. (또는 `$env:Path += ';D:\src\flutter\bin'`)
 - 에뮬레이터가 Java 오류로 안 뜸: firebase-tools 14+ 는 JDK 21 필요. `JAVA21_HOME` 에 JDK 21 경로를 지정한다.
 - 앱 화면이 비어 있음: 터미널 B(seed)를 실행했는지, 브라우저 콘솔에 `permission-denied` 가 없는지 확인.
 - `FirebaseFunctionsException: INTERNAL`: 터미널 A 로그를 확인. 시크릿 관련이면 `npm --prefix functions run dev:setup` 후 에뮬레이터 재시작.

@@ -1,53 +1,28 @@
-export type Tier = 'best' | 'ok' | 'bad';
-export const TIERS: Tier[] = ['best', 'ok', 'bad'];
-export type Ranking = Record<Tier, string[]>;
+// 점수 계산 (순수 함수). 모든 점수는 별점(1~5) 기준이다.
+//   찐점수   = 모든 인증 후기의 "실제 별점" 평균
+//   이벤트점수 = 이벤트 참여자가 이벤트 때 준 별점 평균
+//   거품     = 이벤트 참여자 각자의 (이벤트 별점 − 실제 별점) 평균. 같은 사람끼리 비교하므로 공정하다.
 export const MIN_REVIEWS = 3;
-
-const TIER_RANGE: Record<Tier, [number, number]> = { best: [7, 10], ok: [4, 7], bad: [0, 4] };
 
 export const round1 = (x: number): number => Math.round(x * 10) / 10;
 
-export function personalScore(tier: Tier, index: number, n: number): number {
-  const [lo, hi] = TIER_RANGE[tier];
-  return round1(hi - ((hi - lo) * (index + 0.5)) / n);
+export interface RestaurantSums {
+  /** 모든 후기의 실제 별점 합 */
+  scoreSum: number;
+  reviewCount: number;
+  /** 이벤트 참여 후기의 이벤트 별점 합 */
+  eventStarSum: number;
+  /** 이벤트 참여 후기의 실제 별점 합 (거품 계산용) */
+  eventActualSum: number;
+  eventReviewCount: number;
 }
 
-export function emptyRanking(): Ranking {
-  return { best: [], ok: [], bad: [] };
-}
-
-export function scoresOf(r: Ranking): Map<string, number> {
-  const m = new Map<string, number>();
-  for (const t of TIERS) r[t].forEach((id, i) => m.set(id, personalScore(t, i, r[t].length)));
-  return m;
-}
-
-export function insertPlace(r: Ranking, placeId: string, tier: Tier, rankIndex: number): Ranking {
-  const next = emptyRanking();
-  for (const t of TIERS) next[t] = r[t].filter((id) => id !== placeId);
-  const i = Math.max(0, Math.min(Math.trunc(rankIndex), next[tier].length));
-  next[tier].splice(i, 0, placeId);
-  return next;
-}
-
-export interface ScoreChange { old: number | null; new: number }
-
-export function scoreChanges(before: Ranking, after: Ranking): Map<string, ScoreChange> {
-  const a = scoresOf(before);
-  const out = new Map<string, ScoreChange>();
-  for (const [id, s] of scoresOf(after)) {
-    const old = a.get(id) ?? null;
-    if (old !== s) out.set(id, { old, new: s });
-  }
-  return out;
-}
-
-export interface RestaurantSums { scoreSum: number; reviewCount: number; eventStarSum: number; eventReviewCount: number }
 export interface DerivedScores { realScore: number | null; eventScore: number | null; bubble: number | null }
 
 export function deriveScores(s: RestaurantSums): DerivedScores {
   const realScore = s.reviewCount >= MIN_REVIEWS ? round1(s.scoreSum / s.reviewCount) : null;
-  const eventScore = s.eventReviewCount >= MIN_REVIEWS ? round1((s.eventStarSum / s.eventReviewCount) * 2) : null;
-  const bubble = realScore !== null && eventScore !== null ? round1(eventScore - realScore) : null;
+  const enough = s.eventReviewCount >= MIN_REVIEWS;
+  const eventScore = enough ? round1(s.eventStarSum / s.eventReviewCount) : null;
+  const bubble = enough ? round1((s.eventStarSum - s.eventActualSum) / s.eventReviewCount) : null;
   return { realScore, eventScore, bubble };
 }

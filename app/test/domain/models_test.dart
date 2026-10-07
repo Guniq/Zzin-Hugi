@@ -23,34 +23,23 @@ void main() {
 
   test('Review 파싱', () {
     final v = Review.fromMap('u1_p1', {
-      'uid': 'u1', 'restaurantId': 'p1', 'tier': 'bad', 'personalScore': 2, 'eventJoined': true,
+      'uid': 'u1', 'restaurantId': 'p1', 'stars': 2, 'eventJoined': true,
       'eventStars': 5, 'text': '별로였어요 이벤트로 갔음', 'photos': ['photos/u1/a.jpg'],
       'visitDate': '2026-10-06', 'likeCount': 3,
     });
-    expect(v.tier, Tier.bad);
-    expect(v.personalScore, 2.0);
+    expect(v.stars, 2);
     expect(v.eventStars, 5);
     expect(v.photos, ['photos/u1/a.jpg']);
     expect(v.createdAt, isNull);
   });
 
-  test('AppUser 랭킹 파싱 (없는 등급은 빈 리스트)', () {
-    final u = AppUser.fromMap('u1', {
-      'nickname': '찐이', 'title': '찐린이', 'likesReceived': 0, 'verifiedReviewCount': 1,
-      'ranking': {'best': ['a', 'b']},
-    });
-    expect(u.ranking[Tier.best], ['a', 'b']);
-    expect(u.ranking[Tier.ok], isEmpty);
-    expect(u.ranking[Tier.bad], isEmpty);
-  });
-
   test('SubmitInput.toMap는 콜러블 계약 그대로', () {
     const i = SubmitInput(
-      placeId: 'p1', receiptPath: 'receipts/u1/x.jpg', tier: Tier.ok, rankIndex: 2,
+      placeId: 'p1', receiptPath: 'receipts/u1/x.jpg', stars: 3,
       eventJoined: true, eventStars: 4, text: '무난했어요 괜찮아요 ㅎㅎ', photos: ['photos/u1/a.jpg'],
     );
     expect(i.toMap(), {
-      'placeId': 'p1', 'receiptPath': 'receipts/u1/x.jpg', 'tier': 'ok', 'rankIndex': 2,
+      'placeId': 'p1', 'receiptPath': 'receipts/u1/x.jpg', 'stars': 3,
       'eventJoined': true, 'eventStars': 4, 'text': '무난했어요 괜찮아요 ㅎㅎ', 'photos': ['photos/u1/a.jpg'],
     });
   });

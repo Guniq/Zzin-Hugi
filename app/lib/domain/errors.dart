@@ -14,7 +14,7 @@ final _messages = {
   'no_user': '프로필을 만드는 중이에요. 잠시 후 다시 시도해 주세요.',
 };
 
-const _fields = {'placeId', 'receiptPath', 'tier', 'rankIndex', 'eventJoined', 'eventStars', 'text', 'photos', 'query'};
+const _fields = {'placeId', 'receiptPath', 'stars', 'eventJoined', 'eventStars', 'text', 'photos', 'query'};
 
 String reviewErrorText(String? message) {
   if (message != null && _messages.containsKey(message)) return _messages[message]!;
