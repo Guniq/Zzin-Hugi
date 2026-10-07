@@ -8,3 +8,4 @@ functions/.env.local
 functions/.secret.local
 api-key*.txt
 *.secret
+*-key.txt
