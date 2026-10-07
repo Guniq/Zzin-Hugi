@@ -104,19 +104,24 @@ Flutter 앱 (Riverpod, 기능별 폴더)
 | 경로 | 필드 |
 |---|---|
 | `users/{uid}` | nickname, title, likesReceived, verifiedReviewCount, ranking `{best: [placeId], ok: [...], bad: [...]}`, dailyReviewCount, dailyReviewDate, createdAt |
-| `restaurants/{kakaoPlaceId}` | name, address, lat, lng, geohash, region, realScore, eventScore, bubble, reviewCount, eventReviewCount |
-| `reviews/{reviewId}` | uid, restaurantId, region, tier, personalScore, eventJoined, eventStars(nullable), text, photos[], visitDate, likeCount, createdAt, updatedAt |
+| `restaurants/{kakaoPlaceId}` | name, address(지번), roadAddress, lat, lng, geohash, region(베타 지역 밖이면 null), scoreSum, reviewCount, eventStarSum, eventReviewCount, realScore, eventScore, bubble. 서버(`searchPlaces`)만 생성 |
+| `reviews/{uid}_{placeId}` | uid, restaurantId, region, tier, personalScore, eventJoined, eventStars(nullable), text, photos[], visitDate, likeCount, createdAt, updatedAt |
 | `reviews/{id}/likes/{uid}` | createdAt |
 | `receiptKeys/{hash}` | uid, reviewId, createdAt. hash = SHA-256(승인번호+금액+날짜) |
 | `reports/{id}` | reviewId, reporterUid, reason, createdAt |
-| `crowns/{yyyy-MM}_{region}` | uid, likes, status(pending/confirmed) |
-| `config/regions` | 베타 지역 목록 |
+| `crowns/{표시월 yyyy-MM}_{region}` | uid, likes, region, scoreMonth(집계월), displayMonth(표시월), status(pending/confirmed) |
+| `likeMonths/{yyyy-MM}_{region}_{uid}` | uid, region, month, likes — 월간 지역별 받은 따봉 (대마왕 집계용) |
+| `searchCache/{hash}` | placeIds, cachedAt — 카카오 검색 결과 7일 캐시 |
+| `config/regions` | list: `[{id, name, gu, dongs[]}]` 예: `{id:'seongsu', name:'성수', gu:'성동구', dongs:['성수']}` |
 
 보안 규칙:
 - `restaurants`, `reviews`, `users`, `crowns`: 클라이언트 읽기 전용
 - `likes`: 생성/삭제 허용 조건 — 인증됨, 문서 ID = 본인 uid, 본인 후기 아님, `users/{uid}.verifiedReviewCount >= 1`
 - `reports`: 생성만 허용, reporterUid = 본인
-- `receiptKeys`, `config`: 클라이언트 접근 불가
+- `receiptKeys`, `config`, `likeMonths`, `searchCache`: 클라이언트 접근 불가
+
+유저 문서 생성: 로그인 직후 앱이 `ensureUser` callable 호출 (카카오·Apple 공통).
+베타 지역 밖 식당은 후기 작성 거절 (`out_of_region`).
 
 ## 8. 어뷰징 방어
 
@@ -135,7 +140,7 @@ Flutter 앱 (Riverpod, 기능별 폴더)
 - OCR 실패·타임아웃: 작성 중 후기 로컬 임시저장 + 재시도. 입력 내용 보존
 - 영수증 검증 실패: 실패 사유(상호 불일치 / 날짜 초과 / 중복 / 판독 불가) 표시, 재촬영 안내
 - `submitReview` 실패: 트랜잭션 전체 롤백 (영수증 해시 미등록)
-- 카카오 API 쿼터 초과: `restaurants` 컬렉션 우선 검색, 없을 때만 카카오 호출
+- 카카오 API 쿼터 절약: 같은 검색어+위치(소수 2자리) 결과를 `searchCache`에 7일 캐시
 - 오프라인: 읽기는 Firestore 캐시, 작성은 온라인 필수
 
 ## 10. 테스트
