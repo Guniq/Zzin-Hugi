@@ -429,7 +429,7 @@ console.log('wrote functions/.env.local and functions/.secret.local (에뮬레�
 `functions/package.json`의 `scripts`에 추가:
 ```json
     "dev:setup": "node scripts/dev-setup.js",
-    "emu": "cd .. && npx --prefix functions firebase emulators:start --project demo-jjinhugi --only auth,functions,firestore,storage",
+    "emu": "cd .. && node functions/scripts/with-java21.js npx --prefix functions firebase emulators:start --project demo-jjinhugi --only auth,functions,firestore,storage",
     "seed": "node lib/dev/seed.js"
 ```
 
@@ -3284,7 +3284,8 @@ git commit -m "feat(app): add write-review flow with receipt, comparison and eve
 카카오 검색과 영수증 OCR은 에뮬레이터에서만 **가짜**로 동작한다 (영수증은 어떤 사진이든 선택한 식당의 영수증으로 인정).
 
 ## 준비 (1회)
-- Flutter SDK, Chrome, Node 22+, Java 11+ (firebase-tools 13 기준)
+- Flutter SDK, Chrome, Node 22+, JDK 21
+- JDK 21 (`C:\Program Files\Java\jdk-21` 이거나 환경변수 `JAVA21_HOME`). 시스템 기본 java가 11이어도 `emu` 스크립트가 알아서 21을 쓴다
 - 저장소 루트에서:
 ```powershell
 npm --prefix functions install
@@ -3327,7 +3328,7 @@ flutter run -d chrome --dart-define=USE_EMULATOR=true
 
 ## 막힐 때
 - `Your requested "node" version "22" doesn't match your global version` 오류: `functions/package.json`의 `engines.node`를 `">=22"`로 바꾼다.
-- 에뮬레이터가 Java 오류로 안 뜸: `java -version` 확인 (11 이상). firebase-tools 14+ 로 올리려면 JDK 21 필요.
+- 에뮬레이터가 Java 오류로 안 뜸: firebase-tools 14+ 는 JDK 21 필요. `JAVA21_HOME` 에 JDK 21 경로를 지정한다.
 - 앱 화면이 비어 있음: 터미널 B(seed)를 실행했는지, 브라우저 콘솔에 `permission-denied` 가 없는지 확인.
 - `FirebaseFunctionsException: INTERNAL`: 터미널 A 로그를 확인. 시크릿 관련이면 `npm --prefix functions run dev:setup` 후 에뮬레이터 재시작.
 ````

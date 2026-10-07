@@ -22,7 +22,7 @@ npx --prefix functions firebase deploy --only firestore,storage,functions
 gcloud storage buckets update gs://<프로젝트ID>.firebasestorage.app --lifecycle-file=storage-lifecycle.json
 ```
 
-> 로컬 Emulator는 Java 11+ 와 firebase-tools 13 기준. 최신 firebase-tools(14+)는 JDK 21이 필요하다.
+> 로컬 Emulator(`npm --prefix functions run emu`, `test:emu`)는 JDK 21이 필요하다. `functions/scripts/with-java21.js`가 `JAVA21_HOME` 또는 `C:/Program Files/Java/jdk-21`을 PATH 앞에 붙여 실행한다.
 
 ## 베타 지역 등록 (콘솔 → Firestore)
 `config/regions` 문서: `{ list: [{ id: "seongsu", name: "성수", gu: "성동구", dongs: ["성수"] }] }`

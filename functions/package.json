@@ -8,10 +8,10 @@
   "scripts": {
     "build": "tsc",
     "test:unit": "jest test/unit",
-    "test:emu": "cd .. && npx --prefix functions firebase emulators:exec --project demo-jjinhugi --only auth,firestore,storage \"npm --prefix functions run jest:emu\"",
+    "test:emu": "cd .. && node functions/scripts/with-java21.js npx --prefix functions firebase emulators:exec --project demo-jjinhugi --only auth,firestore,storage \"npm --prefix functions run jest:emu\"",
     "jest:emu": "jest test/emu --runInBand",
     "dev:setup": "node scripts/dev-setup.js",
-    "emu": "cd .. && npx --prefix functions firebase emulators:start --project demo-jjinhugi --only auth,functions,firestore,storage",
+    "emu": "cd .. && node functions/scripts/with-java21.js npx --prefix functions firebase emulators:start --project demo-jjinhugi --only auth,functions,firestore,storage",
     "seed": "node lib/dev/seed.js"
   },
   "dependencies": {
@@ -24,7 +24,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^26.6.4",
     "firebase": "^12.19.0",
-    "firebase-tools": "^13.35.1",
+    "firebase-tools": "^15.32.1",
     "jest": "^30.5.2",
     "ts-jest": "^29.4.14",
     "typescript": "^5.9.3"
