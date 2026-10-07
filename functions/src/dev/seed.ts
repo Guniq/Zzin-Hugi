@@ -7,7 +7,7 @@ import { TIERS, Tier, deriveScores, personalScore, round1 } from '../scoring';
 import { titleFor } from '../title';
 import { crownMonths } from '../crown';
 
-export const SEED_REGIONS: Region[] = [{ id: 'seongsu', name: '성수', gu: '성동구', dongs: ['성수'] }];
+export const SEED_REGIONS: Region[] = [{ id: 'hwagok', name: '화곡', gu: '강서구', dongs: ['화곡', '화곡본'] }];
 
 const SEED_USERS: { uid: string; nickname: string; likes: number; ranking: Record<Tier, string[]> }[] = [
   { uid: 'seed1', nickname: '찐미식가', likes: 4, ranking: { best: ['fake-1', 'fake-3'], ok: ['fake-2'], bad: ['fake-4'] } },
@@ -45,7 +45,7 @@ export function buildSeedData(now: Date): SeedData {
         const score = personalScore(tier, i, u.ranking[tier].length);
         const stars = EVENT_STARS[placeId] ?? null;
         reviews[`${u.uid}_${placeId}`] = {
-          uid: u.uid, restaurantId: placeId, region: 'seongsu', tier, personalScore: score,
+          uid: u.uid, restaurantId: placeId, region: 'hwagok', tier, personalScore: score,
           eventJoined: stars !== null, eventStars: stars, text: TEXTS[tier], photos: [],
           visitDate, likeCount: u.likes, createdAt: ts, updatedAt: ts,
         };
@@ -77,8 +77,8 @@ export function buildSeedData(now: Date): SeedData {
   return {
     regions: SEED_REGIONS, restaurants, reviews, users,
     crown: {
-      id: `${displayMonth}_seongsu`,
-      data: { uid: 'seed1', likes: top.likesReceived, region: 'seongsu', scoreMonth: displayMonth, displayMonth, status: 'confirmed' },
+      id: `${displayMonth}_hwagok`,
+      data: { uid: 'seed1', likes: top.likesReceived, region: 'hwagok', scoreMonth: displayMonth, displayMonth, status: 'confirmed' },
     },
   };
 }

@@ -75,7 +75,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('성수 찐고기', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                            Text('화곡 찐고기', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                             Text('이벤트 별점 vs 찐점수', style: TextStyle(fontSize: 13, color: AppColors.sub)),
                           ],
                         ),

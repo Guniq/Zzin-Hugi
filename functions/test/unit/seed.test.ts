@@ -12,7 +12,7 @@ test('찐점수·거품지수 계산 결과', () => {
 
 test('후기 없는 식당은 점수 필드가 없음 (홈 목록에서 제외됨)', () => {
   expect(d.restaurants['fake-5']).not.toHaveProperty('realScore');
-  expect(d.restaurants['fake-5']).toMatchObject({ region: 'seongsu' });
+  expect(d.restaurants['fake-5']).toMatchObject({ region: 'hwagok' });
   expect(d.restaurants['fake-6']).toMatchObject({ region: null });
 });
 
@@ -22,5 +22,5 @@ test('후기·유저·대마왕', () => {
   expect(d.reviews['seed1_fake-4']).toMatchObject({ tier: 'bad', eventJoined: true, eventStars: 5 });
   expect(d.users['seed1']).toMatchObject({ nickname: '찐미식가', verifiedReviewCount: 4, likesReceived: 16, title: '찐후기러' });
   expect(d.users['seed3']).toMatchObject({ likesReceived: 4, title: '찐린이' });
-  expect(d.crown).toMatchObject({ id: '2026-10_seongsu', data: { uid: 'seed1', status: 'confirmed', region: 'seongsu' } });
+  expect(d.crown).toMatchObject({ id: '2026-10_hwagok', data: { uid: 'seed1', status: 'confirmed', region: 'hwagok' } });
 });

@@ -30,7 +30,7 @@ test('위치가 없으면 베타 지역 중심으로 검색', async () => {
   const kakao = jest.fn().mockResolvedValue(places);
   await searchPlacesCore(db, kakao, { query: '찐' }, NOW);
   expect(kakao).toHaveBeenCalledWith('찐', DEFAULT_NEAR);
-  expect(DEFAULT_NEAR).toEqual({ lat: 37.5446, lng: 127.0557 });
+  expect(DEFAULT_NEAR).toEqual({ lat: 37.5412, lng: 126.8402 }); // 화곡역 인근
 });
 
 test('7일 내 같은 검색은 캐시 사용', async () => {

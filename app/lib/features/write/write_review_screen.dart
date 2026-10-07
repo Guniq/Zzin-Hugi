@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/regions.dart';
 import '../../data/providers.dart';
 import '../../domain/errors.dart';
 import '../../domain/models.dart';
@@ -262,9 +263,9 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
               FilledButton(onPressed: _searching ? null : _search, child: const Text('검색')),
             ],
           ),
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Text('성수 주변을 먼저 보여 드려요. 지역 이름도 함께 검색하면 더 정확해요.', style: TextStyle(fontSize: 13, color: AppColors.sub)),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text('${betaRegions.first.name} 주변을 먼저 보여 드려요. 지역 이름도 함께 검색하면 더 정확해요.', style: const TextStyle(fontSize: 13, color: AppColors.sub)),
           ),
           const SizedBox(height: 16),
           if (_searching)
@@ -276,11 +277,11 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
             ),
           for (final p in _results) _PlaceTile(place: p, selected: _place?.placeId == p.placeId, onTap: () => setState(() => _place = p)),
           if (_searched && _results.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
               child: Text(
-                '찾는 식당이 없나요? 이름을 조금 다르게 검색해 보세요. 지금은 성수 지역 식당만 후기를 쓸 수 있어요.',
-                style: TextStyle(fontSize: 13, height: 1.55, color: AppColors.sub),
+                '찾는 식당이 없나요? 이름을 조금 다르게 검색해 보세요. 지금은 ${betaRegions.first.name} 지역 식당만 후기를 쓸 수 있어요.',
+                style: const TextStyle(fontSize: 13, height: 1.55, color: AppColors.sub),
               ),
             ),
         ],

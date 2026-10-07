@@ -72,5 +72,5 @@ test('가짜 영수증 승인번호는 경로마다 다르고 같은 경로면 �
 });
 
 test('가짜 식당 지역: 5개는 성수, 1개는 베타 밖', () => {
-  expect(FAKE_PLACES.map((p) => regionFor(p.address, SEED_REGIONS))).toEqual(['seongsu', 'seongsu', 'seongsu', 'seongsu', 'seongsu', null]);
+  expect(FAKE_PLACES.map((p) => regionFor(p.address, SEED_REGIONS))).toEqual(['hwagok', 'hwagok', 'hwagok', 'hwagok', 'hwagok', null]);
 });

@@ -1,6 +1,8 @@
-const _messages = {
+import '../core/regions.dart';
+
+final _messages = {
   'place_not_found': '식당 정보를 찾을 수 없어요. 다시 검색해 주세요.',
-  'out_of_region': '아직 베타 지역이 아니에요. 성수에서 먼저 만나요!',
+  'out_of_region': '아직 베타 지역이 아니에요. ${betaRegions.first.name}에서 먼저 만나요!',
   'daily_limit': '하루에 쓸 수 있는 후기는 5개예요. 내일 다시 써 주세요.',
   'ocr_unavailable': '영수증 확인 서버가 바빠요. 잠시 후 다시 시도해 주세요. 작성한 내용은 그대로예요.',
   'unreadable': '영수증을 읽지 못했어요. 글씨가 잘 보이게 다시 찍어 주세요.',

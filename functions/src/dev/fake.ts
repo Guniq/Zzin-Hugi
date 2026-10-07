@@ -8,11 +8,11 @@ export const isFakeOcr = (): boolean => process.env.FAKE_EXTERNALS === 'true' &&
 export const isFakeKakao = (): boolean => isFakeOcr() && process.env.FAKE_KAKAO !== 'false';
 
 export const FAKE_PLACES: KakaoPlace[] = [
-  { placeId: 'fake-1', name: '성수 찐국밥', address: '서울 성동구 성수동2가 300-1', roadAddress: '서울 성동구 연무장길 10', category: '한식 · 국밥', lat: 37.5446, lng: 127.0557 },
-  { placeId: 'fake-2', name: '성수 찐카페', address: '서울 성동구 성수동1가 10', roadAddress: '서울 성동구 성수이로 20', category: '카페', lat: 37.5440, lng: 127.0560 },
-  { placeId: 'fake-3', name: '성수 찐면옥', address: '서울 성동구 성수동1가 20', roadAddress: '서울 성동구 성수이로 30', category: '한식 · 냉면', lat: 37.5430, lng: 127.0570 },
-  { placeId: 'fake-4', name: '성수 찐고기', address: '서울 성동구 성수동2가 31', roadAddress: '서울 성동구 아차산로 40', category: '한식 · 육류,고기', lat: 37.5420, lng: 127.0580 },
-  { placeId: 'fake-5', name: '성수 찐빵집', address: '서울 성동구 성수동2가 50', roadAddress: '서울 성동구 서울숲길 50', category: '간식 · 제과,베이커리', lat: 37.5450, lng: 127.0540 },
+  { placeId: 'fake-1', name: '화곡 찐국밥', address: '서울 강서구 화곡동 1011-3', roadAddress: '서울 강서구 강서로 120', category: '한식 · 국밥', lat: 37.5415, lng: 126.8405 },
+  { placeId: 'fake-2', name: '화곡 찐카페', address: '서울 강서구 화곡동 1012-7', roadAddress: '서울 강서구 화곡로 301', category: '카페', lat: 37.5420, lng: 126.8410 },
+  { placeId: 'fake-3', name: '화곡 찐면옥', address: '서울 강서구 화곡동 1020-1', roadAddress: '서울 강서구 곰달래로 55', category: '한식 · 냉면', lat: 37.5408, lng: 126.8395 },
+  { placeId: 'fake-4', name: '화곡 찐고기', address: '서울 강서구 화곡동 1031-9', roadAddress: '서울 강서구 강서로 142', category: '한식 · 육류,고기', lat: 37.5400, lng: 126.8420 },
+  { placeId: 'fake-5', name: '화곡 찐빵집', address: '서울 강서구 화곡동 1040-2', roadAddress: '서울 강서구 화곡로 288', category: '간식 · 제과,베이커리', lat: 37.5425, lng: 126.8390 },
   { placeId: 'fake-6', name: '강남 찐돈까스', address: '서울 강남구 역삼동 100', roadAddress: '서울 강남구 테헤란로 60', category: '일식 · 돈까스,우동', lat: 37.5000, lng: 127.0360 },
 ];
 

@@ -9,9 +9,9 @@ import { REGION, KAKAO_REST_KEY } from './config';
 import { isFakeKakao, fakeKakaoSearch } from './dev/fake';
 
 export const CACHE_DAYS = 7;
-// 위치를 못 받았을 때 검색 기준점: 베타 지역(성수) 중심.
+// 위치를 못 받았을 때 검색 기준점: 베타 지역(화곡동, 화곡역 인근) 중심.
 // ponytail: 베타 지역이 늘면 config/regions 에 center 를 넣고 가장 가까운 지역을 쓴다.
-export const DEFAULT_NEAR: LatLng = { lat: 37.5446, lng: 127.0557 };
+export const DEFAULT_NEAR: LatLng = { lat: 37.5412, lng: 126.8402 };
 export interface PlaceResult extends KakaoPlace { region: string | null }
 export type KakaoSearch = (query: string, near: LatLng | null) => Promise<KakaoPlace[]>;
 

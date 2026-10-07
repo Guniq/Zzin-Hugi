@@ -25,7 +25,7 @@ gcloud storage buckets update gs://<프로젝트ID>.firebasestorage.app --lifecy
 > 로컬 Emulator(`npm --prefix functions run emu`, `test:emu`)는 JDK 21이 필요하다. `functions/scripts/with-java21.js`가 `JAVA21_HOME` 또는 `C:/Program Files/Java/jdk-21`을 PATH 앞에 붙여 실행한다.
 
 ## 베타 지역 등록 (콘솔 → Firestore)
-`config/regions` 문서: `{ list: [{ id: "seongsu", name: "성수", gu: "성동구", dongs: ["성수"] }] }`
+`config/regions` 문서: `{ list: [{ id: "hwagok", name: "화곡", gu: "강서구", dongs: ["화곡", "화곡본"] }] }`
 
 ## 매월 1일
 콘솔 → `crowns` 컬렉션 → 이번 달 `pending` 문서 확인 → 담합 의심 없으면 `status`를 `confirmed`로 변경
