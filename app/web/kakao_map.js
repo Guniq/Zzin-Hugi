@@ -9,6 +9,9 @@
   var ACCENT = '#C93C1C';
   var GREY = '#9AA0A6';
   var LOAD_TIMEOUT_MS = 10000;
+  var LABEL_MAX_W = 112;
+  var LABEL_H = 20;
+  var DOT_R = 12; // 점 반지름 + 여유
 
   var sdkPromise = null;
   var maps = {};
@@ -37,16 +40,26 @@
     return sdkPromise;
   }
 
+  // 점 + 이름 라벨. 오버레이의 기준점은 점(wrap)의 한가운데이고, 라벨은 점 옆에 absolute 로 붙는다.
+  // 라벨은 layoutLabels 가 겹침을 계산해 보이거나 숨긴다.
   function dotEl(m, onTap) {
     var wrap = document.createElement('div');
-    wrap.style.cssText = 'padding:10px;cursor:pointer;';
+    wrap.style.cssText = 'position:relative;padding:10px;cursor:pointer;';
     var dot = document.createElement('div');
     dot.style.cssText =
       'width:18px;height:18px;border-radius:50%;box-sizing:border-box;border:3px solid #fff;' +
       'box-shadow:0 1px 4px rgba(18,20,23,.4);background:' + (m.blocked ? GREY : INK) + ';';
+    var label = document.createElement('div');
+    label.textContent = m.name; // innerHTML 을 쓰지 않는다 (가게 이름은 외부 데이터)
+    label.style.cssText =
+      'position:absolute;top:50%;transform:translateY(-50%);padding:2px 6px;border-radius:8px;' +
+      'background:rgba(255,255,255,.94);box-shadow:0 1px 3px rgba(18,20,23,.25);' +
+      'font:700 11px/1.3 "Noto Sans KR",sans-serif;white-space:nowrap;max-width:' + LABEL_MAX_W + 'px;' +
+      'overflow:hidden;text-overflow:ellipsis;color:' + (m.blocked ? GREY : INK) + ';';
     wrap.appendChild(dot);
+    wrap.appendChild(label);
     wrap.addEventListener('click', function (e) { e.stopPropagation(); onTap(m.id); });
-    return wrap;
+    return { el: wrap, label: label };
   }
 
   function pinEl(m, onTap) {
@@ -91,6 +104,7 @@
 
     // 프로그램이 지도를 옮긴 뒤의 idle 은 사용자가 움직인 게 아니므로 무시한다.
     k.event.addListener(map, 'idle', function () {
+      layoutLabels(entry); // 확대·이동이 끝나면 이름 라벨의 겹침을 다시 계산
       if (Date.now() < entry.quietUntil) return;
       var c = map.getCenter();
       onUserMoved(c.getLat(), c.getLng());
@@ -103,6 +117,58 @@
   function clearOverlays(entry) {
     entry.overlays.forEach(function (o) { o.setMap(null); });
     entry.overlays = [];
+    entry.items = [];
+  }
+
+  function overlaps(a, b) {
+    return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
+  }
+
+  // 점마다 이름 라벨을 달되, 이미 놓인 라벨·점·선택 핀과 겹치면 숨긴다.
+  // 우선순위: 선택된 핀 → 검색 결과 순서(서버가 거리순으로 준다). 화면 오른쪽 끝에서는 라벨을 점의 왼쪽에 둔다.
+  function layoutLabels(entry) {
+    if (!entry.items || entry.items.length === 0) return;
+    var proj, cw;
+    try {
+      proj = entry.map.getProjection();
+      cw = entry.map.getNode().clientWidth;
+    } catch (e) { return; }
+    var k = window.kakao.maps;
+    var placed = [];
+    var points = entry.items.map(function (it) { return proj.containerPointFromCoords(new k.LatLng(it.m.lat, it.m.lng)); });
+
+    // 선택된 핀(이름표 + 핀 몸통)이 차지하는 자리를 먼저 막아 둔다.
+    entry.items.forEach(function (it, i) {
+      if (!it.selected) return;
+      var p = points[i];
+      var w = Math.min(200, 24 + it.m.name.length * 13);
+      placed.push({ x1: p.x - w / 2, x2: p.x + w / 2, y1: p.y - 82, y2: p.y });
+    });
+    // 모든 점 자체도 장애물로 둔다.
+    points.forEach(function (p) { placed.push({ x1: p.x - DOT_R, x2: p.x + DOT_R, y1: p.y - DOT_R, y2: p.y + DOT_R }); });
+
+    entry.items.forEach(function (it, i) {
+      if (it.selected || !it.label) return;
+      var p = points[i];
+      var w = Math.min(LABEL_MAX_W, 14 + it.m.name.length * 11);
+      var right = p.x + DOT_R + 2 + w <= cw - 4;
+      var rect = right
+        ? { x1: p.x + DOT_R - 2, x2: p.x + DOT_R - 2 + w, y1: p.y - LABEL_H / 2, y2: p.y + LABEL_H / 2 }
+        : { x1: p.x - DOT_R + 2 - w, x2: p.x - DOT_R + 2, y1: p.y - LABEL_H / 2, y2: p.y + LABEL_H / 2 };
+      // 자기 점과는 겹쳐도 되므로, 자기 점을 뺀 장애물만 검사한다.
+      var blocked = placed.some(function (r) {
+        var own = Math.abs((r.x1 + r.x2) / 2 - p.x) < 1 && Math.abs((r.y1 + r.y2) / 2 - p.y) < 1;
+        return !own && overlaps(rect, r);
+      });
+      if (blocked) {
+        it.label.style.display = 'none';
+        return;
+      }
+      it.label.style.display = '';
+      if (right) { it.label.style.left = 'calc(100% - 8px)'; it.label.style.right = ''; }
+      else { it.label.style.right = 'calc(100% - 8px)'; it.label.style.left = ''; }
+      placed.push(rect);
+    });
   }
 
   function setMarkers(id, markersJson, selectedId, fit) {
@@ -117,11 +183,14 @@
     var ordered = list.slice().sort(function (a, b) {
       return (a.id === selectedId ? 1 : 0) - (b.id === selectedId ? 1 : 0);
     });
+    // 라벨 우선순위는 검색 결과 순서(거리순)이므로, 그리는 순서(ordered)와 별개로 원래 순서대로 items 에 담는다.
+    var made = {};
     ordered.forEach(function (m) {
       var selected = m.id === selectedId;
+      var dot = selected ? null : dotEl(m, tap);
       var overlay = new k.CustomOverlay({
         position: new k.LatLng(m.lat, m.lng),
-        content: selected ? pinEl(m, tap) : dotEl(m, tap),
+        content: selected ? pinEl(m, tap) : dot.el,
         yAnchor: selected ? 1 : 0.5,
         xAnchor: 0.5,
         zIndex: selected ? 10 : 1,
@@ -129,7 +198,11 @@
       });
       overlay.setMap(entry.map);
       entry.overlays.push(overlay);
+      made[m.id] = { m: m, selected: selected, label: dot ? dot.label : null };
     });
+    entry.items = list.map(function (m) { return made[m.id]; });
+    // 지도가 새로 그려진 뒤 좌표 변환이 가능하므로 잠깐 뒤에 한 번, 이후에는 idle 때마다 계산한다.
+    setTimeout(function () { layoutLabels(entry); }, 60);
 
     if (fit && list.length > 0) {
       entry.quietUntil = Date.now() + 1500;
