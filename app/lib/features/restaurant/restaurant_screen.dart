@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../data/providers.dart';
 import '../../domain/models.dart';
 import '../../domain/score.dart';
+import '../../ui/gauge.dart';
+import '../../ui/theme.dart';
+import '../../ui/widgets.dart';
 import 'review_card.dart';
 
 class RestaurantScreen extends ConsumerStatefulWidget {
@@ -23,53 +26,41 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     final r = ref.watch(restaurantProvider(widget.id)).value;
     final reviews = ref.watch(reviewsProvider((widget.id, _sort)));
     return Scaffold(
-      appBar: AppBar(title: Text(r?.name ?? '식당')),
+      appBar: AppBar(),
       body: r == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.only(bottom: 24),
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(r.name, style: Theme.of(context).textTheme.headlineSmall),
-                      Text(r.address),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          Chip(label: Text('찐 ${scoreText(r.realScore)}')),
-                          if (r.eventScore != null) Chip(label: Text('이벤트 ${scoreText(r.eventScore)}')),
-                          if (r.bubble != null) Chip(label: Text('거품 ${bubbleText(r.bubble)}')),
-                          Chip(label: Text('후기 ${r.reviewCount}')),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      FilledButton.icon(
-                        onPressed: () => context.push('/write', extra: r.toPlace()),
-                        icon: const Icon(Icons.edit),
-                        label: const Text('이 식당 후기 쓰기'),
-                      ),
+                      Text(r.name, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                      const SizedBox(height: 2),
+                      Text(r.address, style: const TextStyle(fontSize: 14, color: AppColors.sub)),
                     ],
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: _ScoreCard(r: r),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: FilledButton(
+                    onPressed: () => context.push('/write', extra: r.toPlace()),
+                    child: const Text('이 식당 후기 쓰기'),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 8),
                   child: Row(
                     children: [
-                      ChoiceChip(
-                        label: const Text('따봉순'),
-                        selected: _sort == ReviewSort.likes,
-                        onSelected: (_) => setState(() => _sort = ReviewSort.likes),
-                      ),
+                      pill('따봉순', selected: _sort == ReviewSort.likes, onSelected: () => setState(() => _sort = ReviewSort.likes)),
                       const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('최신순'),
-                        selected: _sort == ReviewSort.recent,
-                        onSelected: (_) => setState(() => _sort = ReviewSort.recent),
-                      ),
+                      pill('최신순', selected: _sort == ReviewSort.recent, onSelected: () => setState(() => _sort = ReviewSort.recent)),
                     ],
                   ),
                 ),
@@ -84,4 +75,89 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
             ),
     );
   }
+}
+
+class _ScoreCard extends StatelessWidget {
+  const _ScoreCard({required this.r});
+  final Restaurant r;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasScore = r.realScore != null;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('찐점수', style: TextStyle(fontSize: 13, color: AppColors.sub)),
+                      Text(
+                        scoreText(r.realScore),
+                        style: TextStyle(
+                          fontSize: hasScore ? 56 : 22,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                          letterSpacing: -1,
+                          color: hasScore ? AppColors.ink : AppColors.sub,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (r.bubble != null) BubbleBadge('거품 ${bubbleText(r.bubble)}', large: true),
+              ],
+            ),
+            const SizedBox(height: 22),
+            BubbleGauge(real: r.realScore, event: r.eventScore),
+            const SizedBox(height: 8),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('● 찐점수 (인증 후기 평균)', style: TextStyle(fontSize: 12, color: AppColors.sub)),
+                Text('○ 이벤트 별점', style: TextStyle(fontSize: 12, color: AppColors.sub)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _Stat('이벤트 점수', scoreText(r.eventScore).replaceAll('데이터 부족', '-')),
+                const SizedBox(width: 8),
+                _Stat('전체 후기', '${r.reviewCount}'),
+                const SizedBox(width: 8),
+                _Stat('이벤트 후기', '${r.eventReviewCount}'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat(this.label, this.value);
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(color: AppColors.ground, borderRadius: BorderRadius.circular(12)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.sub)),
+              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ),
+      );
 }

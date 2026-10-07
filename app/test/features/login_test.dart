@@ -4,8 +4,15 @@ import 'package:zzinhugi/features/login/login_screen.dart';
 
 import '../helpers.dart';
 
+void tall(WidgetTester t) {
+  t.view.physicalSize = const Size(800, 2000);
+  t.view.devicePixelRatio = 1.0;
+  addTearDown(t.view.reset);
+}
+
 void main() {
   testWidgets('닉네임을 입력하고 테스트 로그인하면 인증 서비스에 전달', (tester) async {
+    tall(tester);
     final auth = FakeAuth(null);
     await tester.pumpWidget(harness(child: const LoginScreen(), backend: FakeBackend(), auth: auth));
     await tester.pumpAndSettle();
@@ -18,6 +25,7 @@ void main() {
   });
 
   testWidgets('닉네임이 비어 있으면 로그인하지 않음', (tester) async {
+    tall(tester);
     final auth = FakeAuth(null);
     await tester.pumpWidget(harness(child: const LoginScreen(), backend: FakeBackend(), auth: auth));
     await tester.tap(find.text('테스트 로그인'));
@@ -27,6 +35,7 @@ void main() {
   });
 
   testWidgets('카카오·Apple 로그인은 준비 중 표시', (tester) async {
+    tall(tester);
     await tester.pumpWidget(harness(child: const LoginScreen(), backend: FakeBackend(), auth: FakeAuth(null)));
     expect(find.text('카카오로 시작하기 (준비 중)'), findsOneWidget);
     expect(find.text('Apple로 시작하기 (준비 중)'), findsOneWidget);

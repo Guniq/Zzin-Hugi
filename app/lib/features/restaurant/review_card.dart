@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../data/providers.dart';
 import '../../domain/models.dart';
 import '../../domain/score.dart';
+import '../../ui/theme.dart';
+import '../../ui/widgets.dart';
 
 class ReviewCard extends ConsumerWidget {
   const ReviewCard({super.key, required this.review});
@@ -51,37 +53,48 @@ class ReviewCard extends ConsumerWidget {
     final liked = ref.watch(likedProvider(review.id)).value ?? false;
     final mine = review.uid == myUid;
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                InkWell(
-                  onTap: () => context.push('/u/${review.uid}'),
-                  child: Text(author?.nickname ?? '…', style: const TextStyle(fontWeight: FontWeight.bold)),
+                InitialAvatar(author?.nickname ?? ''),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        onTap: () => context.push('/u/${review.uid}'),
+                        child: Text(author?.nickname ?? '…', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                      ),
+                      Text(
+                        '${author?.title ?? ''} · ${review.visitDate}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.sub),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 6),
-                if (author != null) Chip(label: Text(author.title), visualDensity: VisualDensity.compact),
-                const Spacer(),
-                Text(review.visitDate, style: Theme.of(context).textTheme.bodySmall),
+                Text(scoreText(review.personalScore), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 8,
+              spacing: 6,
+              runSpacing: 6,
               children: [
-                Text('${review.tier.label} ${scoreText(review.personalScore)}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                _Tag(review.tier.label, fill: AppColors.ink, color: Colors.white),
                 if (review.eventJoined)
-                  Text('🎁 이벤트 참여 · 별점 ${review.eventStars}', style: TextStyle(color: Colors.orange.shade800)),
+                  _Tag('이벤트 참여 · 별점 ${review.eventStars}', fill: AppColors.accentSoft, color: AppColors.accentText),
               ],
             ),
-            const SizedBox(height: 6),
-            Text(review.text),
+            const SizedBox(height: 10),
+            Text(review.text, style: const TextStyle(fontSize: 15, height: 1.55)),
             if (review.photos.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               SizedBox(
                 height: 96,
                 child: ListView(
@@ -90,16 +103,22 @@ class ReviewCard extends ConsumerWidget {
                 ),
               ),
             ],
+            const SizedBox(height: 4),
             Row(
               children: [
-                IconButton(
-                  tooltip: '따봉',
-                  icon: Icon(liked ? Icons.thumb_up : Icons.thumb_up_outlined),
+                TextButton.icon(
                   onPressed: mine ? null : () => _toggleLike(context, ref, liked, me),
+                  style: TextButton.styleFrom(minimumSize: const Size(44, 44), foregroundColor: AppColors.ink),
+                  icon: Icon(liked ? Icons.thumb_up : Icons.thumb_up_outlined, size: 20),
+                  label: Text('${review.likeCount}'),
                 ),
-                Text('${review.likeCount}'),
                 const Spacer(),
-                IconButton(tooltip: '신고', icon: const Icon(Icons.flag_outlined), onPressed: () => _report(context, ref)),
+                IconButton(
+                  tooltip: '신고',
+                  color: AppColors.sub,
+                  icon: const Icon(Icons.flag_outlined),
+                  onPressed: () => _report(context, ref),
+                ),
               ],
             ),
           ],
@@ -107,6 +126,20 @@ class ReviewCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag(this.text, {required this.fill, required this.color});
+  final String text;
+  final Color fill;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(color: fill, borderRadius: BorderRadius.circular(12)),
+        child: Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+      );
 }
 
 class _Photo extends ConsumerWidget {
@@ -120,7 +153,7 @@ class _Photo extends ConsumerWidget {
       child: FutureBuilder<String>(
         future: ref.read(backendProvider).downloadUrl(path),
         builder: (_, snap) => ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
           child: SizedBox(
             width: 96,
             height: 96,

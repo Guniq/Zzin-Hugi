@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router.dart';
+import 'ui/theme.dart';
 
 class ZzinApp extends ConsumerWidget {
   const ZzinApp({super.key});
@@ -10,7 +11,7 @@ class ZzinApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: '찐후기',
-      theme: ThemeData(colorSchemeSeed: const Color(0xFFE8590C), useMaterial3: true),
+      theme: buildTheme(),
       routerConfig: ref.watch(routerProvider),
     );
   }

@@ -18,7 +18,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('성수 찐고기'), findsOneWidget);
-    expect(find.text('찐 2.3'), findsOneWidget);
+    expect(find.text('찐점수'), findsOneWidget);
+    expect(find.text('2.3'), findsOneWidget);
     expect(find.text('이벤트 10.0'), findsOneWidget);
     expect(find.text('거품 +7.7'), findsOneWidget);
     expect(find.text('후기 3'), findsOneWidget);
@@ -29,7 +30,7 @@ void main() {
     await tester.pumpWidget(harness(child: const HomeScreen(), backend: b));
     await tester.pumpAndSettle();
 
-    expect(find.text('찐 데이터 부족'), findsOneWidget);
+    expect(find.text('데이터 부족'), findsOneWidget);
     expect(find.textContaining('거품 +'), findsNothing);
   });
 
