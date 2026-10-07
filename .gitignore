@@ -9,3 +9,14 @@ functions/.secret.local
 api-key*.txt
 *.secret
 *-key.txt
+
+# 에디터·OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 비밀값 (카카오 키 등)
+.env
+.env.*
