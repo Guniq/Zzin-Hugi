@@ -50,3 +50,19 @@ test('kakaoMe 401은 throw', async () => {
   const fetchFn = jest.fn().mockResolvedValue({ ok: false, status: 401 });
   await expect(kakaoMe('bad', fetchFn as unknown as typeof fetch)).rejects.toThrow('kakao_me 401');
 });
+
+test('카카오 오류는 상태 코드와 카카오 메시지를 담아 던짐 (키는 담지 않음)', async () => {
+  const fetchFn = jest.fn().mockResolvedValue({
+    ok: false,
+    status: 403,
+    json: async () => ({ errorType: 'NotAuthorizedError', message: 'App(x) disabled OPEN_MAP_AND_LOCAL service.' }),
+  });
+  const err = await kakaoKeywordSearch('국밥', null, 'SECRETKEY', fetchFn as unknown as typeof fetch).catch((e) => e);
+  expect(err.message).toBe('kakao 403: App(x) disabled OPEN_MAP_AND_LOCAL service.');
+  expect(err.message).not.toContain('SECRETKEY');
+});
+
+test('오류 본문이 JSON 이 아니어도 상태 코드는 남김', async () => {
+  const fetchFn = jest.fn().mockResolvedValue({ ok: false, status: 502, json: async () => { throw new Error('not json'); } });
+  await expect(kakaoKeywordSearch('국밥', null, 'K', fetchFn as unknown as typeof fetch)).rejects.toThrow('kakao 502');
+});

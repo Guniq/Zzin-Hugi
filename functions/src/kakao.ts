@@ -23,6 +23,16 @@ export function parseKakaoKeyword(json: unknown): KakaoPlace[] {
     }));
 }
 
+/** "kakao 403: <카카오가 준 메시지>". 키는 절대 담지 않는다. */
+async function kakaoErrorText(prefix: string, res: Response): Promise<string> {
+  try {
+    const msg = ((await res.json()) as { message?: unknown })?.message;
+    return typeof msg === 'string' && msg ? `${prefix} ${res.status}: ${msg}` : `${prefix} ${res.status}`;
+  } catch {
+    return `${prefix} ${res.status}`;
+  }
+}
+
 export async function kakaoKeywordSearch(query: string, near: LatLng | null, restKey: string, fetchFn: typeof fetch = fetch): Promise<KakaoPlace[]> {
   const p = new URLSearchParams({ query, size: '15' });
   if (near) {
@@ -35,7 +45,7 @@ export async function kakaoKeywordSearch(query: string, near: LatLng | null, res
     headers: { Authorization: `KakaoAK ${restKey}` },
     signal: AbortSignal.timeout(5_000),
   });
-  if (!res.ok) throw new Error(`kakao ${res.status}`);
+  if (!res.ok) throw new Error(await kakaoErrorText('kakao', res));
   return parseKakaoKeyword(await res.json());
 }
 

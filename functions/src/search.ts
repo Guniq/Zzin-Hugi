@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Firestore, Timestamp, getFirestore, DocumentData } from 'firebase-admin/firestore';
+import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { geohashForLocation } from 'geofire-common';
 import { KakaoPlace, LatLng, kakaoKeywordSearch } from './kakao';
@@ -38,7 +39,9 @@ export async function searchPlacesCore(db: Firestore, kakao: KakaoSearch, raw: u
   let places: KakaoPlace[];
   try {
     places = await kakao(query, near);
-  } catch {
+  } catch (e) {
+    // 앱에는 일반 문구만 보이고, 원인(상태 코드·카카오 메시지)은 서버 로그에만 남긴다.
+    logger.error('kakao search failed', { error: e instanceof Error ? e.message : String(e) });
     throw new HttpsError('unavailable', 'kakao_unavailable');
   }
   const regions: Region[] = (await db.doc('config/regions').get()).data()?.list ?? [];
