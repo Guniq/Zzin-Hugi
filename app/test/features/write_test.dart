@@ -8,8 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:zzinhugi/data/providers.dart';
 import 'package:zzinhugi/domain/models.dart';
 import 'package:zzinhugi/domain/score.dart';
+import 'package:zzinhugi/features/write/map/place_map.dart';
 import 'package:zzinhugi/features/write/write_review_screen.dart';
 
+import '../fake_map.dart';
 import '../helpers.dart';
 
 const p1 = PlaceResult(placeId: 'p1', name: '성수 찐국밥', address: '서울 성동구 성수동2가 300-1', category: '한식 · 국밥', region: 'seongsu');
@@ -276,4 +278,68 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('영수증 선택됨'), findsOneWidget);
   });
+
+  group('지도 모드', () {
+    Widget mapScreen(FakeBackend b, FakeMapControls c) => harness(
+          child: const WriteReviewScreen(),
+          backend: b,
+          overrides: <Override>[
+            mapEnabledProvider.overrideWithValue(true),
+            placeMapBuilderProvider.overrideWithValue(fakeMapBuilder(c)),
+            imagePickerProvider.overrideWithValue(() async => fakeImage()),
+          ],
+        );
+
+    testWidgets('검색 → 이 식당 선택 → 영수증 단계로 이동', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final b = backend();
+      await tester.pumpWidget(mapScreen(b, FakeMapControls()));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '찐');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('이 식당 선택'));
+      await tester.pumpAndSettle();
+      expect(find.text('영수증 사진 선택'), findsOneWidget);
+      await pickReceipt(tester);
+      await tester.tap(find.text('이전'));
+      await tester.pumpAndSettle();
+      // 영수증 단계의 "이전"은 식당 찾기(지도)로 돌아간다
+      expect(find.byTooltip('내 위치'), findsOneWidget);
+    });
+
+    testWidgets('목록 보기로 바꾸면 검색어·결과가 유지되고, 지도로 보기로 되돌아감', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final b = backend();
+      await tester.pumpWidget(mapScreen(b, FakeMapControls()));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '찐');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('목록 보기'));
+      await tester.pumpAndSettle();
+      expect(find.text('성수 찐국밥'), findsOneWidget);
+      expect(find.text('베타 지역 아님'), findsOneWidget);
+      await tester.tap(find.text('성수 찐국밥'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, '다음')).onPressed, isNotNull);
+
+      await tester.tap(find.text('지도로 보기'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('내 위치'), findsOneWidget);
+    });
+
+    testWidgets('지도를 쓸 수 없는 환경(기본값)은 목록 화면으로 시작하고 지도 버튼이 없음', (tester) async {
+      await tester.pumpWidget(screen(backend()));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('내 위치'), findsNothing);
+      expect(find.text('지도로 보기'), findsNothing);
+      expect(find.text('검색'), findsOneWidget);
+    });
+  });
+
 }

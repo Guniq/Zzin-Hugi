@@ -7,6 +7,9 @@ void main() {
     expect(betaRegions, hasLength(1));
     expect(betaRegions.first.id, 'hwagok');
     expect(betaRegions.first.name, '화곡');
+    // 화곡역 인근 (서버 DEFAULT_NEAR 와 같은 기준점)
+    expect(betaRegions.first.lat, closeTo(37.5412, 1e-6));
+    expect(betaRegions.first.lng, closeTo(126.8402, 1e-6));
   });
 
   test('지역 밖 오류 문구에 베타 지역 이름이 들어감', () {

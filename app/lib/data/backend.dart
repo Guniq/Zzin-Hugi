@@ -16,7 +16,7 @@ abstract class Backend {
   Stream<AppUser?> watchUser(String uid);
   Future<Map<String, Restaurant>> getRestaurants(List<String> ids);
   Future<Crown?> getCrown(String region, String month);
-  Future<List<PlaceResult>> searchPlaces(String query);
+  Future<List<PlaceResult>> searchPlaces(String query, {double? lat, double? lng});
   Future<String> uploadImage(String folder, Uint8List bytes, String contentType);
   Future<String> submitReview(SubmitInput input);
   Stream<bool> watchLiked(String reviewId);
@@ -72,8 +72,11 @@ class FirebaseBackend implements Backend {
   }
 
   @override
-  Future<List<PlaceResult>> searchPlaces(String query) async {
-    final res = await _fn.httpsCallable('searchPlaces').call({'query': query});
+  Future<List<PlaceResult>> searchPlaces(String query, {double? lat, double? lng}) async {
+    final res = await _fn.httpsCallable('searchPlaces').call({
+      'query': query,
+      if (lat != null && lng != null) ...{'lat': lat, 'lng': lng},
+    });
     return [for (final e in res.data as List) PlaceResult.fromMap(Map<String, dynamic>.from(e as Map))];
   }
 

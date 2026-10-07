@@ -60,6 +60,8 @@ void main() {
     expect(p.region, isNull);
     expect(p.name, '찐');
     expect(p.category, '한식 · 국밥');
+    expect(p.lat, 37.5);
+    expect(p.lng, isNull);
     expect(PlaceResult.fromMap({'placeId': 'k2', 'name': 'x'}).category, '');
   });
 

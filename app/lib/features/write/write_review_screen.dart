@@ -11,6 +11,7 @@ import '../../domain/models.dart';
 import '../../domain/ranking_session.dart';
 import '../../domain/score.dart';
 import '../../ui/theme.dart';
+import 'map/place_map_picker.dart';
 
 class WriteReviewScreen extends ConsumerStatefulWidget {
   const WriteReviewScreen({super.key, this.initialPlace});
@@ -39,6 +40,7 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
   bool _busy = false;
   bool _searching = false;
   bool _searched = false;
+  bool _mapMode = false;
   String? _error;
 
   @override
@@ -46,6 +48,7 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
     super.initState();
     _place = widget.initialPlace;
     _step = _place == null ? 0 : 1;
+    _mapMode = ref.read(mapEnabledProvider) && _place == null;
   }
 
   @override
@@ -142,6 +145,22 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_step == 0 && _mapMode) {
+      return PlaceMapPicker(
+        onPicked: (p) => setState(() {
+          _place = p;
+          _step = 1;
+        }),
+        onClose: _close,
+        onShowList: (q, r) => setState(() {
+          _query.text = q;
+          _results = r;
+          _searched = q.isNotEmpty;
+          _place = null;
+          _mapMode = false;
+        }),
+      );
+    }
     final first = widget.initialPlace == null ? 0 : 1;
     return Scaffold(
       backgroundColor: AppColors.card,
@@ -245,6 +264,16 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _heading('어느 식당에\n다녀오셨나요?'),
+          if (ref.watch(mapEnabledProvider))
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(() => _mapMode = true),
+                style: TextButton.styleFrom(foregroundColor: AppColors.ink, padding: EdgeInsets.zero, minimumSize: const Size(44, 44)),
+                icon: const Icon(Icons.map_outlined, size: 20),
+                label: const Text('지도로 보기', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
           const SizedBox(height: 20),
           Row(
             children: [

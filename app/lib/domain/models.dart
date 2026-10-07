@@ -10,12 +10,14 @@ enum RestaurantSort { real, bubble }
 enum ReviewSort { likes, recent }
 
 class PlaceResult {
-  const PlaceResult({required this.placeId, required this.name, required this.address, this.category = '', this.region});
+  const PlaceResult({required this.placeId, required this.name, required this.address, this.category = '', this.region, this.lat, this.lng});
   final String placeId;
   final String name;
   final String address;
   final String category;
   final String? region;
+  final double? lat;
+  final double? lng;
 
   factory PlaceResult.fromMap(Map<String, dynamic> m) => PlaceResult(
         placeId: m['placeId'] as String,
@@ -23,6 +25,8 @@ class PlaceResult {
         address: (m['address'] as String?) ?? '',
         category: (m['category'] as String?) ?? '',
         region: m['region'] as String?,
+        lat: _d(m['lat']),
+        lng: _d(m['lng']),
       );
 }
 

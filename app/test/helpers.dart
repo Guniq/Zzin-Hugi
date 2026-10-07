@@ -47,6 +47,7 @@ class FakeBackend extends Fake implements Backend {
   final reports = <(String, String)>[];
   final uploads = <String>[];
   final searched = <String>[];
+  final searchCalls = <(String, double?, double?)>[];
 
   @override
   Stream<List<Restaurant>> watchRestaurants(String region, RestaurantSort sort) => Stream.value(restaurants);
@@ -64,8 +65,9 @@ class FakeBackend extends Fake implements Backend {
   @override
   Future<Crown?> getCrown(String region, String month) async => crown;
   @override
-  Future<List<PlaceResult>> searchPlaces(String query) async {
+  Future<List<PlaceResult>> searchPlaces(String query, {double? lat, double? lng}) async {
     searched.add(query);
+    searchCalls.add((query, lat, lng));
     if (searchError != null) throw searchError!;
     return places;
   }
