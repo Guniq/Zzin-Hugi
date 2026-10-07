@@ -7,5 +7,5 @@ import 'core/firebase_setup.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initFirebase();
-  runApp(const ProviderScope(child: JjinApp()));
+  runApp(const ProviderScope(child: ZzinApp()));
 }

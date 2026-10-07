@@ -10,8 +10,8 @@ const _demoOptions = FirebaseOptions(
   apiKey: 'demo-key',
   appId: '1:1:web:demo',
   messagingSenderId: '1',
-  projectId: 'demo-jjinhugi',
-  storageBucket: 'demo-jjinhugi.appspot.com',
+  projectId: 'demo-zzinhugi',
+  storageBucket: 'demo-zzinhugi.appspot.com',
 );
 
 Future<void> initFirebase() async {

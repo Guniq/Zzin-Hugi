@@ -7,7 +7,7 @@ const auth = getAuth();
 
 beforeEach(async () => {
   await clearFirestore();
-  await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/emulator/v1/projects/demo-jjinhugi/accounts`, { method: 'DELETE' });
+  await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/emulator/v1/projects/demo-zzinhugi/accounts`, { method: 'DELETE' });
 });
 
 test('카카오 로그인: 유저 생성 후 커스텀 토큰', async () => {

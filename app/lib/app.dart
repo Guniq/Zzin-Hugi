@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router.dart';
 
-class JjinApp extends ConsumerWidget {
-  const JjinApp({super.key});
+class ZzinApp extends ConsumerWidget {
+  const ZzinApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

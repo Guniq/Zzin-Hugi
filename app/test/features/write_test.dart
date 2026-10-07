@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:jjinhugi/data/providers.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/domain/score.dart';
-import 'package:jjinhugi/features/write/write_review_screen.dart';
+import 'package:zzinhugi/data/providers.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/domain/score.dart';
+import 'package:zzinhugi/features/write/write_review_screen.dart';
 
 import '../helpers.dart';
 

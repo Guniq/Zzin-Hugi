@@ -8,14 +8,14 @@
 
 **Tech Stack:** Node 22, TypeScript(strict), firebase-functions v2 API, firebase-admin, geofire-common, Jest + ts-jest, Firebase Emulator Suite, @firebase/rules-unit-testing.
 
-**Spec:** `docs/superpowers/specs/2026-10-07-jjinhugi-design.md`
+**Spec:** `docs/superpowers/specs/2026-10-07-zzinhugi-design.md`
 
 **플랜 2(Flutter 앱)** 는 이 플랜의 "앱 계약" 절(문서 끝)을 그대로 사용한다.
 
 ## Global Constraints
 
 - Functions 리전: `asia-northeast3` (서울)
-- Emulator 프로젝트 ID: `demo-jjinhugi` (demo- 접두어 → 실 프로젝트 없이 Emulator 실행)
+- Emulator 프로젝트 ID: `demo-zzinhugi` (demo- 접두어 → 실 프로젝트 없이 Emulator 실행)
 - 점수 구간: 최고 7~10 / 괜찮 4~7 / 별로 0~4, 소수점 1자리
 - 찐점수·이벤트 점수 표시 최소 후기 수: 3 (`MIN_REVIEWS = 3`)
 - 영수증 유효 기간: 방문일 30일 이내 (KST 기준)
@@ -40,7 +40,7 @@
 
 ```
 firebase.json                 Emulator·배포 설정
-.firebaserc                   기본 프로젝트(demo-jjinhugi)
+.firebaserc                   기본 프로젝트(demo-zzinhugi)
 firestore.rules               Firestore 보안 규칙
 firestore.indexes.json        복합 인덱스
 storage.rules                 Storage 보안 규칙
@@ -116,7 +116,7 @@ functions/
 
 `.firebaserc`:
 ```json
-{ "projects": { "default": "demo-jjinhugi" } }
+{ "projects": { "default": "demo-zzinhugi" } }
 ```
 
 `.gitignore`:
@@ -137,7 +137,7 @@ functions/lib/
   "scripts": {
     "build": "tsc",
     "test:unit": "jest test/unit",
-    "test:emu": "cd .. && firebase emulators:exec --project demo-jjinhugi --only auth,firestore,storage \"npm --prefix functions run jest:emu\"",
+    "test:emu": "cd .. && firebase emulators:exec --project demo-zzinhugi --only auth,firestore,storage \"npm --prefix functions run jest:emu\"",
     "jest:emu": "jest test/emu --runInBand"
   }
 }
@@ -814,7 +814,7 @@ let env: RulesTestEnvironment;
 
 beforeAll(async () => {
   env = await initializeTestEnvironment({
-    projectId: 'demo-jjinhugi',
+    projectId: 'demo-zzinhugi',
     firestore: { rules: readFileSync(resolve(root, 'firestore.rules'), 'utf8') },
     storage: { rules: readFileSync(resolve(root, 'storage.rules'), 'utf8') },
   });
@@ -1018,7 +1018,7 @@ git commit -m "feat: add Firestore/Storage security rules and indexes"
 import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 
-export const PROJECT = 'demo-jjinhugi';
+export const PROJECT = 'demo-zzinhugi';
 
 export function testDb(): Firestore {
   if (!getApps().length) initializeApp({ projectId: PROJECT });
@@ -1569,7 +1569,7 @@ const auth = getAuth();
 
 beforeEach(async () => {
   await clearFirestore();
-  await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/emulator/v1/projects/demo-jjinhugi/accounts`, { method: 'DELETE' });
+  await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}/emulator/v1/projects/demo-zzinhugi/accounts`, { method: 'DELETE' });
 });
 
 test('카카오 로그인: 유저 생성 후 커스텀 토큰', async () => {

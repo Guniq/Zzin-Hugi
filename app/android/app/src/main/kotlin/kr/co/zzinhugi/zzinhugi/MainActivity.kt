@@ -1,4 +1,4 @@
-package kr.co.jjinhugi.jjinhugi
+package kr.co.zzinhugi.zzinhugi
 
 import io.flutter.embedding.android.FlutterActivity
 

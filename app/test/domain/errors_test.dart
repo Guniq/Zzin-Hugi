@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/errors.dart';
+import 'package:zzinhugi/domain/errors.dart';
 
 void main() {
   test('알려진 코드는 한국어 문구', () {

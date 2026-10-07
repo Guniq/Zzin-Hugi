@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/score.dart';
+import 'package:zzinhugi/domain/score.dart';
 
 void main() {
   group('personalScore (백엔드와 같은 값)', () {

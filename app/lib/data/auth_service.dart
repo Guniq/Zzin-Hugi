@@ -25,7 +25,7 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Future<void> signInDebug(String nickname) async {
-    final email = '${base64Url.encode(utf8.encode(nickname)).replaceAll('=', '')}@debug.jjinhugi.test';
+    final email = '${base64Url.encode(utf8.encode(nickname)).replaceAll('=', '')}@debug.zzinhugi.test';
     const password = 'debug-pass-1234';
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);

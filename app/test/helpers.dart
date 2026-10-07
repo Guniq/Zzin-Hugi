@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jjinhugi/data/auth_service.dart';
-import 'package:jjinhugi/data/backend.dart';
-import 'package:jjinhugi/data/providers.dart';
-import 'package:jjinhugi/domain/models.dart';
+import 'package:zzinhugi/data/auth_service.dart';
+import 'package:zzinhugi/data/backend.dart';
+import 'package:zzinhugi/data/providers.dart';
+import 'package:zzinhugi/domain/models.dart';
 
 class FakeAuth implements AuthService {
   FakeAuth([this.uid = 'me']);

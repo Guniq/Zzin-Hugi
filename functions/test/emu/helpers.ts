@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 
-export const PROJECT = 'demo-jjinhugi';
+export const PROJECT = 'demo-zzinhugi';
 
 export function testDb(): Firestore {
   if (!getApps().length) initializeApp({ projectId: PROJECT });

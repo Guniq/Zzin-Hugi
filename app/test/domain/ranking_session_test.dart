@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/ranking_session.dart';
+import 'package:zzinhugi/domain/ranking_session.dart';
 
 void main() {
   test('후보가 없으면 바로 끝, 위치 0', () {

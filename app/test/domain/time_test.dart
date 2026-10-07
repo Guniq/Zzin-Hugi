@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/core/time.dart';
+import 'package:zzinhugi/core/time.dart';
 
 void main() {
   test('UTC 9/30 15:00 은 KST 10월', () {

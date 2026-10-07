@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/domain/score.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/domain/score.dart';
 
 void main() {
   test('Restaurant: 점수 null과 정수 숫자 처리', () {

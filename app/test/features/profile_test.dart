@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/features/profile/profile_screen.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/features/profile/profile_screen.dart';
 
 import '../helpers.dart';
 

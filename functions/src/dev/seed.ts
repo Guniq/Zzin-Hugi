@@ -97,6 +97,6 @@ export async function runSeed(db: Firestore, now: Date = new Date()): Promise<vo
 // `npm run seed` — 에뮬레이터에 데모 데이터 주입
 if (require.main === module) {
   process.env.FIRESTORE_EMULATOR_HOST ??= 'localhost:8080';
-  initializeApp({ projectId: 'demo-jjinhugi' });
+  initializeApp({ projectId: 'demo-zzinhugi' });
   runSeed(getFirestore()).then(() => console.log('seeded demo data →', process.env.FIRESTORE_EMULATOR_HOST));
 }

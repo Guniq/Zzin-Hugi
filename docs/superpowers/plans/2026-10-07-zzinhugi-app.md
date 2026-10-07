@@ -8,8 +8,8 @@
 
 **Tech Stack:** Flutter(stable, Dart 3), flutter_riverpod, go_router, firebase_core/auth/cloud_firestore/cloud_functions/firebase_storage, image_picker, uuid. 백엔드 쪽은 플랜 1과 동일(TypeScript, Jest, Emulator).
 
-**Spec:** `docs/superpowers/specs/2026-10-07-jjinhugi-design.md`
-**선행 플랜:** `docs/superpowers/plans/2026-10-07-jjinhugi-backend.md` (완료, `feat/backend` 브랜치). 함수 계약은 그 문서 끝 "앱 계약" 절.
+**Spec:** `docs/superpowers/specs/2026-10-07-zzinhugi-design.md`
+**선행 플랜:** `docs/superpowers/plans/2026-10-07-zzinhugi-backend.md` (완료, `feat/backend` 브랜치). 함수 계약은 그 문서 끝 "앱 계약" 절.
 
 ## 이 플랜의 범위 (스펙 대비 조정)
 
@@ -23,9 +23,9 @@
 
 ## Global Constraints
 
-- 앱 폴더: `app/`, 프로젝트명 `jjinhugi`, org `kr.co.jjinhugi`
+- 앱 폴더: `app/`, 프로젝트명 `zzinhugi`, org `kr.co.zzinhugi`
 - 모든 화면 문구는 한국어
-- Functions 리전 `asia-northeast3` (`functionsRegion`), Emulator 프로젝트 ID `demo-jjinhugi`
+- Functions 리전 `asia-northeast3` (`functionsRegion`), Emulator 프로젝트 ID `demo-zzinhugi`
 - 에뮬레이터 모드는 `--dart-define=USE_EMULATOR=true`일 때만. 이 값이 없으면 앱은 시작 시 예외를 던진다(실 프로젝트는 플랜 3)
 - 베타 지역은 앱에 상수로 고정: `[성수(seongsu)]` (`config/regions`는 클라이언트가 읽을 수 없음)
 - 점수 구간·공식은 백엔드와 동일: 최고 7~10 / 괜찮 4~7 / 별로 0~4, 소수점 1자리
@@ -366,7 +366,7 @@ export async function runSeed(db: Firestore, now: Date = new Date()): Promise<vo
 // `npm run seed` — 에뮬레이터에 데모 데이터 주입
 if (require.main === module) {
   process.env.FIRESTORE_EMULATOR_HOST ??= 'localhost:8080';
-  initializeApp({ projectId: 'demo-jjinhugi' });
+  initializeApp({ projectId: 'demo-zzinhugi' });
   runSeed(getFirestore()).then(() => console.log('seeded demo data →', process.env.FIRESTORE_EMULATOR_HOST));
 }
 ```
@@ -429,7 +429,7 @@ console.log('wrote functions/.env.local and functions/.secret.local (에뮬레�
 `functions/package.json`의 `scripts`에 추가:
 ```json
     "dev:setup": "node scripts/dev-setup.js",
-    "emu": "cd .. && node functions/scripts/with-java21.js npx --prefix functions firebase emulators:start --project demo-jjinhugi --only auth,functions,firestore,storage",
+    "emu": "cd .. && node functions/scripts/with-java21.js npx --prefix functions firebase emulators:start --project demo-zzinhugi --only auth,functions,firestore,storage",
     "seed": "node lib/dev/seed.js"
 ```
 
@@ -464,7 +464,7 @@ git commit -m "feat(functions): add emulator-only fake externals and demo seed d
   - `const bool useEmulator`, `const String emulatorHost`, `const String functionsRegion = 'asia-northeast3'` (env.dart)
   - `Future<void> initFirebase()` (firebase_setup.dart) — 에뮬레이터 모드가 아니면 `UnsupportedError`
   - `class BetaRegion { final String id; final String name; }`, `const List<BetaRegion> betaRegions` (regions.dart)
-  - `class JjinApp extends ConsumerWidget` (app.dart) — `routerProvider`(Task 3)를 사용
+  - `class ZzinApp extends ConsumerWidget` (app.dart) — `routerProvider`(Task 3)를 사용
 
 - [ ] **Step 1: Flutter SDK 설치 확인 (사람 또는 실행자, 1회)**
 
@@ -481,7 +481,7 @@ Expected: `Flutter`, `Chrome`이 ✓. Android toolchain·Visual Studio는 ✗여
 
 Run (저장소 루트):
 ```bash
-flutter create --org kr.co.jjinhugi --project-name jjinhugi --platforms web,android,ios app
+flutter create --org kr.co.zzinhugi --project-name zzinhugi --platforms web,android,ios app
 cd app
 flutter pub add flutter_riverpod go_router firebase_core firebase_auth cloud_firestore cloud_functions firebase_storage image_picker uuid
 rm test/widget_test.dart
@@ -524,8 +524,8 @@ const _demoOptions = FirebaseOptions(
   apiKey: 'demo-key',
   appId: '1:1:web:demo',
   messagingSenderId: '1',
-  projectId: 'demo-jjinhugi',
-  storageBucket: 'demo-jjinhugi.appspot.com',
+  projectId: 'demo-zzinhugi',
+  storageBucket: 'demo-zzinhugi.appspot.com',
 );
 
 Future<void> initFirebase() async {
@@ -551,7 +551,7 @@ import 'core/firebase_setup.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initFirebase();
-  runApp(const ProviderScope(child: JjinApp()));
+  runApp(const ProviderScope(child: ZzinApp()));
 }
 ```
 
@@ -560,8 +560,8 @@ Future<void> main() async {
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class JjinApp extends ConsumerWidget {
-  const JjinApp({super.key});
+class ZzinApp extends ConsumerWidget {
+  const ZzinApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -617,7 +617,7 @@ git commit -m "feat(app): scaffold Flutter project with emulator Firebase setup"
 `app/test/domain/score_test.dart`:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/score.dart';
+import 'package:zzinhugi/domain/score.dart';
 
 void main() {
   group('personalScore (백엔드와 같은 값)', () {
@@ -663,7 +663,7 @@ void main() {
 `app/test/domain/ranking_session_test.dart`:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/ranking_session.dart';
+import 'package:zzinhugi/domain/ranking_session.dart';
 
 void main() {
   test('후보가 없으면 바로 끝, 위치 0', () {
@@ -726,7 +726,7 @@ void main() {
 `app/test/domain/errors_test.dart`:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/errors.dart';
+import 'package:zzinhugi/domain/errors.dart';
 
 void main() {
   test('알려진 코드는 한국어 문구', () {
@@ -751,7 +751,7 @@ void main() {
 `app/test/domain/time_test.dart`:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/core/time.dart';
+import 'package:zzinhugi/core/time.dart';
 
 void main() {
   test('UTC 9/30 15:00 은 KST 10월', () {
@@ -766,8 +766,8 @@ void main() {
 `app/test/domain/models_test.dart`:
 ```dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/domain/score.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/domain/score.dart';
 
 void main() {
   test('Restaurant: 점수 null과 정수 숫자 처리', () {
@@ -839,7 +839,7 @@ void main() {
 - [ ] **Step 2: 실패 확인**
 
 Run: `cd app && flutter test test/domain`
-Expected: FAIL — `Target of URI doesn't exist: 'package:jjinhugi/domain/score.dart'` 등
+Expected: FAIL — `Target of URI doesn't exist: 'package:zzinhugi/domain/score.dart'` 등
 
 - [ ] **Step 3: 구현**
 
@@ -1185,10 +1185,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jjinhugi/data/auth_service.dart';
-import 'package:jjinhugi/data/backend.dart';
-import 'package:jjinhugi/data/providers.dart';
-import 'package:jjinhugi/domain/models.dart';
+import 'package:zzinhugi/data/auth_service.dart';
+import 'package:zzinhugi/data/backend.dart';
+import 'package:zzinhugi/data/providers.dart';
+import 'package:zzinhugi/domain/models.dart';
 
 class FakeAuth implements AuthService {
   FakeAuth([this.uid = 'me']);
@@ -1309,7 +1309,7 @@ AppUser appUser(String uid, {int verified = 1, Map<String, List<String>> ranking
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/features/login/login_screen.dart';
+import 'package:zzinhugi/features/login/login_screen.dart';
 
 import '../helpers.dart';
 
@@ -1346,7 +1346,7 @@ void main() {
 - [ ] **Step 2: 실패 확인**
 
 Run: `cd app && flutter test test/features/login_test.dart`
-Expected: FAIL — `Target of URI doesn't exist: 'package:jjinhugi/data/auth_service.dart'`
+Expected: FAIL — `Target of URI doesn't exist: 'package:zzinhugi/data/auth_service.dart'`
 
 - [ ] **Step 3: 데이터 계층 구현**
 
@@ -1379,7 +1379,7 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Future<void> signInDebug(String nickname) async {
-    final email = '${base64Url.encode(utf8.encode(nickname)).replaceAll('=', '')}@debug.jjinhugi.test';
+    final email = '${base64Url.encode(utf8.encode(nickname)).replaceAll('=', '')}@debug.zzinhugi.test';
     const password = 'debug-pass-1234';
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -1743,8 +1743,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router.dart';
 
-class JjinApp extends ConsumerWidget {
-  const JjinApp({super.key});
+class ZzinApp extends ConsumerWidget {
+  const ZzinApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1792,8 +1792,8 @@ git commit -m "feat(app): add backend/auth layer, providers, router and login sc
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/features/home/home_screen.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/features/home/home_screen.dart';
 
 import '../helpers.dart';
 
@@ -2089,9 +2089,9 @@ git commit -m "feat(app): add home screen with sorting and crown banner"
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/domain/score.dart';
-import 'package:jjinhugi/features/restaurant/restaurant_screen.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/domain/score.dart';
+import 'package:zzinhugi/features/restaurant/restaurant_screen.dart';
 
 import '../helpers.dart';
 
@@ -2470,8 +2470,8 @@ git commit -m "feat(app): add restaurant detail with review cards, likes and rep
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/features/profile/profile_screen.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/features/profile/profile_screen.dart';
 
 import '../helpers.dart';
 
@@ -2699,10 +2699,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:jjinhugi/data/providers.dart';
-import 'package:jjinhugi/domain/models.dart';
-import 'package:jjinhugi/domain/score.dart';
-import 'package:jjinhugi/features/write/write_review_screen.dart';
+import 'package:zzinhugi/data/providers.dart';
+import 'package:zzinhugi/domain/models.dart';
+import 'package:zzinhugi/domain/score.dart';
+import 'package:zzinhugi/features/write/write_review_screen.dart';
 
 import '../helpers.dart';
 
