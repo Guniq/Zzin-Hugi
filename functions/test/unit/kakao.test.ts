@@ -1,0 +1,38 @@
+import { parseKakaoKeyword, kakaoKeywordSearch, kakaoMe } from '../../src/kakao';
+
+const body = {
+  documents: [
+    { id: '111', place_name: '성수 찐국밥', address_name: '서울 성동구 성수동2가 300-1', road_address_name: '서울 성동구 연무장길 10', x: '127.05', y: '37.54', category_group_code: 'FD6' },
+    { id: '222', place_name: '찐카페', address_name: '서울 성동구 성수동1가 1', road_address_name: '', x: '127.04', y: '37.55', category_group_code: 'CE7' },
+    { id: '333', place_name: '찐주차장', address_name: '서울 성동구 성수동1가 2', road_address_name: '', x: '127.0', y: '37.5', category_group_code: 'PK6' },
+  ],
+};
+
+test('음식점·카페만 남기고 숫자 변환', () => {
+  expect(parseKakaoKeyword(body)).toEqual([
+    { placeId: '111', name: '성수 찐국밥', address: '서울 성동구 성수동2가 300-1', roadAddress: '서울 성동구 연무장길 10', lat: 37.54, lng: 127.05 },
+    { placeId: '222', name: '찐카페', address: '서울 성동구 성수동1가 1', roadAddress: '', lat: 37.55, lng: 127.04 },
+  ]);
+});
+
+test('위치 있으면 x/y/radius 포함, KakaoAK 헤더', async () => {
+  const fetchFn = jest.fn().mockResolvedValue({ ok: true, json: async () => body });
+  await kakaoKeywordSearch('국밥', { lat: 37.5, lng: 127.0 }, 'KEY', fetchFn as unknown as typeof fetch);
+  const [url, init] = fetchFn.mock.calls[0];
+  const u = new URL(url);
+  expect(u.searchParams.get('query')).toBe('국밥');
+  expect(u.searchParams.get('x')).toBe('127');
+  expect(u.searchParams.get('y')).toBe('37.5');
+  expect(init.headers.Authorization).toBe('KakaoAK KEY');
+});
+
+test('kakaoMe는 id 문자열과 닉네임 반환', async () => {
+  const fetchFn = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ id: 42, kakao_account: { profile: { nickname: '찐이' } } }) });
+  expect(await kakaoMe('tok', fetchFn as unknown as typeof fetch)).toEqual({ id: '42', nickname: '찐이' });
+  expect(fetchFn.mock.calls[0][1].headers.Authorization).toBe('Bearer tok');
+});
+
+test('kakaoMe 401은 throw', async () => {
+  const fetchFn = jest.fn().mockResolvedValue({ ok: false, status: 401 });
+  await expect(kakaoMe('bad', fetchFn as unknown as typeof fetch)).rejects.toThrow('kakao_me 401');
+});

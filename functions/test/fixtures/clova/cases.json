@@ -1,0 +1,6 @@
+[
+  {
+    "file": "sample-ok.json",
+    "expected": { "storeName": "성수찐국밥", "address": "서울 성동구 연무장길 10", "date": "2026-10-06", "total": 18000, "approvalNo": "12345678" }
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "version": "V2",
+  "requestId": "r1",
+  "timestamp": 0,
+  "images": [{
+    "uid": "u1",
+    "name": "receipt",
+    "inferResult": "SUCCESS",
+    "message": "SUCCESS",
+    "receipt": {
+      "meta": { "estimatedLanguage": "ko" },
+      "result": {
+        "storeInfo": {
+          "name": { "text": "성수찐국밥", "formatted": { "value": "성수찐국밥" } },
+          "addresses": [{ "text": "서울 성동구 연무장길 10", "formatted": { "value": "서울 성동구 연무장길 10" } }]
+        },
+        "paymentInfo": {
+          "date": { "text": "26.10.06", "formatted": { "year": "26", "month": "10", "day": "6" } },
+          "confirmNum": { "text": "1234-5678" }
+        },
+        "totalPrice": { "price": { "text": "18,000", "formatted": { "value": "18000" } } }
+      }
+    }
+  }]
+}
