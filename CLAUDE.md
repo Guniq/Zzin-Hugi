@@ -13,7 +13,8 @@
    - `functions/src/*` 가 바뀌었으면 `npm --prefix functions run build` 후 에뮬레이터를 다시 띄운다(데이터가 사라지므로 `seed` 다시).
    그리고 에뮬레이터(`emu`)·`seed`·`serve:web` 을 **켜 둔 채로 두고 끄지 않는다.** 이미 떠 있으면 다시 띄우지 않는다(포트 4000/5001/5050/8080/9099/9199 확인).
 2. 모든 응답은 **한글**로 쓴다 (코드·커밋 메시지·기술 용어는 원문 가능).
-3. **비밀값**(`api-key.txt`, `kakao-js-key.txt`, `functions/.secret.local`)은 출력·채팅·커밋에 노출하지 않는다. 모두 git 무시 대상이다.
+3. **비밀값**(`restapi-key.txt`=카카오 REST API 키, `login-key.txt`=카카오 로그인 Client Secret, `kakao-js-key.txt`=지도용 JavaScript 키,
+   `functions/.secret.local`)은 (`api-key.txt` 는 **Admin 키라서 쓰지 않는다** — 카카오 로그인에서 KOE008) 출력·채팅·커밋에 노출하지 않는다. 모두 git 무시 대상이다.
 4. 방화벽·PATH 같은 **시스템 보안 설정은 직접 바꾸지 않고** 명령만 안내한다. 큰 다운로드·전역 설치는 먼저 묻는다.
 5. 큰 기능은 **디자인 캔버스에서 먼저 확인받고** 구현한다 (아래 "디자인").
 
