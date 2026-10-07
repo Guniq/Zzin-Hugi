@@ -44,12 +44,11 @@ npm --prefix functions run emu:lan
 npm --prefix functions run seed
 
 # 터미널 C — 폰이 접속할 PC 주소를 박아서 웹 빌드 후 서빙 (IP를 본인 것으로)
-cd app
-flutter build web --dart-define=USE_EMULATOR=true --dart-define=EMULATOR_HOST=192.168.0.179
-cd ..
+# (저장소 루트의 kakao-js-key.txt 가 있으면 지도 검색이 켜진다)
+npm --prefix functions run build:web -- --host=192.168.0.179
 npm --prefix functions run serve:web
 ```
-`EMULATOR_HOST` 는 **앱이 에뮬레이터를 찾아갈 주소**라서 폰 입장에서 접속 가능한 PC의 IP여야 한다(`localhost` 는 폰 자신을 가리켜 안 된다). IP가 바뀌면 다시 빌드한다.
+`--host` 는 **앱이 에뮬레이터를 찾아갈 주소**라서 폰 입장에서 접속 가능한 PC의 IP여야 한다(`localhost` 는 폰 자신을 가리켜 안 된다). IP가 바뀌면 다시 빌드한다.
 
 ### 4) 아이폰에서
 1. **사파리**에서 `http://192.168.0.179:5050` 접속 (크롬 등 다른 브라우저는 "홈 화면에 추가"가 제한적이다)
@@ -67,7 +66,7 @@ npm --prefix functions run serve:web
 ### Tailscale로 밖에서도 접속
 PC에 Tailscale이 설치돼 있다(`100.x.x.x` 주소). 아이폰에도 Tailscale 앱을 설치하고 같은 계정으로 로그인하면, LTE에서도 같은 방식으로 접속된다.
 1. `tailscale ip -4` 로 PC의 Tailscale IP 확인 (예: `100.113.146.91`)
-2. 위 3)의 빌드를 `--dart-define=EMULATOR_HOST=100.113.146.91` 로 다시 하고, 아이폰에서 `http://100.113.146.91:5050` 접속
+2. 위 3)의 빌드를 `build:web -- --host=100.113.146.91` 로 다시 하고, 아이폰에서 `http://100.113.146.91:5050` 접속
 3. 방화벽 규칙의 `-Profile` 에 `Private` 대신 Tailscale 어댑터가 속한 프로필을 넣어야 할 수 있다.
 
 ---

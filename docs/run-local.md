@@ -14,6 +14,19 @@ npm --prefix functions run dev:setup
 cd app; flutter pub get; cd ..
 ```
 
+## 지도 검색 켜기 (선택, 카카오맵 JavaScript 키 필요)
+식당 찾기 화면이 카카오맵으로 바뀐다. 검색하면 핀이 찍히고, 핀을 눌러 고르고, 지도를 옮기면 `이 지역에서 다시 검색`이 뜬다.
+
+1. 카카오 콘솔 → 앱 → 플랫폼 키 → **JavaScript 키** 를 저장소 루트의 `kakao-js-key.txt` 에 한 줄로 저장 (git 에는 올라가지 않는다)
+2. 같은 화면의 **JavaScript SDK 도메인**에 접속 주소를 등록한다: `http://localhost:5050`, 폰이면 `http://<PC IP>:5050`
+3. 웹을 다시 빌드한다 (키가 있으면 자동으로 지도가 켜진다)
+```powershell
+npm --prefix functions run build:web -- --host=localhost
+npm --prefix functions run serve:web
+```
+`flutter run -d chrome` 으로 직접 띄울 때는 `--dart-define=KAKAO_JS_KEY=<키>` 를 함께 준다. 키가 없거나 도메인이 등록되지 않았으면 지도 대신 `지도를 불러오지 못했어요` 가 뜨고 `목록으로 검색`으로 계속 쓸 수 있다.
+> 지도의 `내 위치` 버튼은 https 주소에서만 동작한다(브라우저 제한). http 로 접속하면 안내만 나온다.
+
 ## 진짜 식당 검색 켜기 (선택, 카카오 REST 키 필요)
 기본값은 가짜 식당 6곳만 나온다. 실제 가게를 찾으려면 카카오 로컬 API 키를 넣는다. (영수증 인식은 계속 가짜라서 아무 사진이나 통과한다.)
 
