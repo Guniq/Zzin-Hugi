@@ -5,6 +5,7 @@ import { geohashForLocation } from 'geofire-common';
 import { KakaoPlace, LatLng, kakaoKeywordSearch } from './kakao';
 import { Region, regionFor } from './address';
 import { REGION, KAKAO_REST_KEY } from './config';
+import { isFake, fakeKakaoSearch } from './dev/fake';
 
 export const CACHE_DAYS = 7;
 export interface PlaceResult extends KakaoPlace { region: string | null }
@@ -55,5 +56,6 @@ export async function searchPlacesCore(db: Firestore, kakao: KakaoSearch, raw: u
 
 export const searchPlaces = onCall({ region: REGION, secrets: [KAKAO_REST_KEY] }, (req) => {
   if (!req.auth) throw new HttpsError('unauthenticated', 'login_required');
-  return searchPlacesCore(getFirestore(), (q, near) => kakaoKeywordSearch(q, near, KAKAO_REST_KEY.value()), req.data, new Date());
+  const kakao: KakaoSearch = isFake() ? fakeKakaoSearch : (q, near) => kakaoKeywordSearch(q, near, KAKAO_REST_KEY.value());
+  return searchPlacesCore(getFirestore(), kakao, req.data, new Date());
 });

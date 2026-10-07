@@ -5,6 +5,7 @@ import { Tier, TIERS, Ranking, emptyRanking, insertPlace, scoreChanges, scoresOf
 import { OcrReceipt, PlaceInfo, verifyReceipt, kstDate } from './receipt';
 import { clovaOcr } from './ocr';
 import { REGION, CLOVA_OCR_SECRET, CLOVA_OCR_URL } from './config';
+import { isFake, fakeOcr } from './dev/fake';
 
 export const DAILY_REVIEW_LIMIT = 5;
 
@@ -12,7 +13,7 @@ export interface SubmitReviewInput {
   placeId: string; receiptPath: string; tier: Tier; rankIndex: number;
   eventJoined: boolean; eventStars: number | null; text: string; photos: string[];
 }
-export interface SubmitDeps { ocr: (receiptPath: string) => Promise<OcrReceipt> }
+export interface SubmitDeps { ocr: (receiptPath: string, place: PlaceInfo) => Promise<OcrReceipt> }
 
 const invalid = (field: string): never => { throw new HttpsError('invalid-argument', field); };
 
@@ -52,7 +53,7 @@ export async function submitReviewCore(db: Firestore, deps: SubmitDeps, uid: str
 
   let ocr: OcrReceipt;
   try {
-    ocr = await deps.ocr(input.receiptPath);
+    ocr = await deps.ocr(input.receiptPath, place as PlaceInfo);
   } catch {
     throw new HttpsError('unavailable', 'ocr_unavailable');
   }
@@ -117,9 +118,11 @@ export async function submitReviewCore(db: Firestore, deps: SubmitDeps, uid: str
 
 export const submitReview = onCall({ region: REGION, secrets: [CLOVA_OCR_SECRET], timeoutSeconds: 60 }, (req) => {
   if (!req.auth) throw new HttpsError('unauthenticated', 'login_required');
-  const ocr = async (path: string) => {
-    const [buf] = await getStorage().bucket().file(path).download();
-    return clovaOcr(buf, { url: CLOVA_OCR_URL.value(), secret: CLOVA_OCR_SECRET.value() });
-  };
+  const ocr = isFake()
+    ? async (path: string, place: PlaceInfo) => fakeOcr(path, place)
+    : async (path: string) => {
+        const [buf] = await getStorage().bucket().file(path).download();
+        return clovaOcr(buf, { url: CLOVA_OCR_URL.value(), secret: CLOVA_OCR_SECRET.value() });
+      };
   return submitReviewCore(getFirestore(), { ocr }, req.auth.uid, req.data, new Date());
 });

@@ -4,3 +4,5 @@ functions/lib/
 .firebase/
 .superpowers/
 *-debug.log
+functions/.env.local
+functions/.secret.local
