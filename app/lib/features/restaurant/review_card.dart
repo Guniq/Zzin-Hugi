@@ -110,7 +110,7 @@ class ReviewCard extends ConsumerWidget {
                   onPressed: mine ? null : () => _toggleLike(context, ref, liked, me),
                   style: TextButton.styleFrom(minimumSize: const Size(44, 44), foregroundColor: AppColors.ink),
                   icon: Icon(liked ? Icons.thumb_up : Icons.thumb_up_outlined, size: 20),
-                  label: Text('${review.likeCount}'),
+                  label: Text('${review.likeCount}', semanticsLabel: '따봉 ${review.likeCount}'),
                 ),
                 const Spacer(),
                 IconButton(

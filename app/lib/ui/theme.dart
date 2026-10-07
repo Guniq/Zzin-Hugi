@@ -32,6 +32,7 @@ ThemeData buildTheme() {
   const shape14 = RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14)));
   return ThemeData(
     useMaterial3: true,
+    fontFamily: 'NotoSansKR',
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.ground,
     appBarTheme: const AppBarTheme(

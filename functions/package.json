@@ -12,6 +12,8 @@
     "jest:emu": "jest test/emu --runInBand",
     "dev:setup": "node scripts/dev-setup.js",
     "emu": "cd .. && node functions/scripts/with-java21.js npx --prefix functions firebase emulators:start --project demo-zzinhugi --only auth,functions,firestore,storage",
+    "emu:lan": "cd .. && node functions/scripts/with-java21.js npx --prefix functions firebase emulators:start --config firebase.lan.json --project demo-zzinhugi --only auth,functions,firestore,storage",
+    "serve:web": "node ../scripts/serve-web.js",
     "seed": "node lib/dev/seed.js"
   },
   "dependencies": {

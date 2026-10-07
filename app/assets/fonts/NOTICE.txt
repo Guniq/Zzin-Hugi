@@ -1,0 +1,2 @@
+Noto Sans KR (c) The Noto Project Authors. SIL Open Font License 1.1 (https://openfontlicense.org).
+이 폴더의 글꼴은 scripts/build-fonts.py 로 원본 가변 글꼴에서 굵기 4개를 뽑고 자주 쓰는 글자만 남긴 것이다.
