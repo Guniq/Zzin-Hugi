@@ -8,14 +8,17 @@ class MapLatLng {
 
 /// 지도에 찍을 핀 하나. [blocked] 는 베타 지역 밖(후기를 쓸 수 없는) 가게.
 class MapMarkerData {
-  const MapMarkerData({required this.id, required this.lat, required this.lng, required this.name, required this.blocked});
+  const MapMarkerData({required this.id, required this.lat, required this.lng, required this.name, required this.blocked, this.badge = ''});
   final String id;
   final double lat;
   final double lng;
   final String name;
   final bool blocked;
 
-  Map<String, Object> toJson() => {'id': id, 'lat': lat, 'lng': lng, 'name': name, 'blocked': blocked};
+  /// 핀 알약 안에 보여 줄 짧은 글자(찐점수 "7.8" 또는 "후기 2"). 없으면 빈 문자열.
+  final String badge;
+
+  Map<String, Object> toJson() => {'id': id, 'lat': lat, 'lng': lng, 'name': name, 'blocked': blocked, 'badge': badge};
 }
 
 /// 지도 위젯이 준비되면 넘겨주는 조작 핸들.

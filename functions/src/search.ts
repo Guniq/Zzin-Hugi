@@ -12,11 +12,15 @@ export const CACHE_DAYS = 7;
 // 위치를 못 받았을 때 검색 기준점: 베타 지역(화곡동, 화곡역 인근) 중심.
 // ponytail: 베타 지역이 늘면 config/regions 에 center 를 넣고 가장 가까운 지역을 쓴다.
 export const DEFAULT_NEAR: LatLng = { lat: 37.5412, lng: 126.8402 };
-export interface PlaceResult extends KakaoPlace { region: string | null }
+/** realScore·reviewCount: 이미 찐후기가 쌓인 식당이면 지도 핀에 점수를 보여 주기 위한 값 */
+export interface PlaceResult extends KakaoPlace { region: string | null; realScore: number | null; reviewCount: number }
 export type KakaoSearch = (query: string, near: LatLng | null) => Promise<KakaoPlace[]>;
 
 function toResult(placeId: string, d: DocumentData): PlaceResult {
-  return { placeId, name: d.name, address: d.address, roadAddress: d.roadAddress, category: d.category ?? '', lat: d.lat, lng: d.lng, region: d.region ?? null };
+  return {
+    placeId, name: d.name, address: d.address, roadAddress: d.roadAddress, category: d.category ?? '', lat: d.lat, lng: d.lng,
+    region: d.region ?? null, realScore: d.realScore ?? null, reviewCount: d.reviewCount ?? 0,
+  };
 }
 
 export async function searchPlacesCore(db: Firestore, kakao: KakaoSearch, raw: unknown, now: Date): Promise<PlaceResult[]> {
@@ -45,7 +49,14 @@ export async function searchPlacesCore(db: Firestore, kakao: KakaoSearch, raw: u
     throw new HttpsError('unavailable', 'kakao_unavailable');
   }
   const regions: Region[] = (await db.doc('config/regions').get()).data()?.list ?? [];
-  const results = places.map((p) => ({ ...p, region: regionFor(p.address, regions) }));
+  // 이미 후기가 있는 식당의 점수를 붙인다 (merge 저장이라 아래 batch 가 점수를 지우지 않는다).
+  const existing = places.length ? await db.getAll(...places.map((p) => db.doc(`restaurants/${p.placeId}`))) : [];
+  const results: PlaceResult[] = places.map((p, i) => ({
+    ...p,
+    region: regionFor(p.address, regions),
+    realScore: existing[i]?.data()?.realScore ?? null,
+    reviewCount: existing[i]?.data()?.reviewCount ?? 0,
+  }));
 
   const batch = db.batch();
   for (const r of results) {

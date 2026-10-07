@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/auth_service.dart';
 import '../../data/providers.dart';
 import '../../ui/gauge.dart';
 import '../../ui/theme.dart';
@@ -38,6 +39,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authServiceProvider).signInDebug(nick.length > 10 ? nick.substring(0, 10) : nick);
     } catch (e) {
       if (mounted) setState(() => _error = '로그인에 실패했어요: $e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  bool get supportsKakao => ref.read(authServiceProvider).supportsKakao;
+
+  Future<void> _kakao() async {
+    loginNotice.value = null;
+    setState(() {
+      _error = null;
+      _busy = true;
+    });
+    try {
+      // 성공하면 카카오 로그인 페이지로 이동하므로 이 아래는 실행되지 않는다.
+      await ref.read(authServiceProvider).signInKakao();
+    } catch (e) {
+      if (mounted) setState(() => _error = '카카오 로그인을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -96,9 +115,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 28),
                   FilledButton(
-                    onPressed: _soon,
+                    onPressed: _busy ? null : (supportsKakao ? _kakao : _soon),
                     style: FilledButton.styleFrom(backgroundColor: const Color(0xFFFEE500), foregroundColor: const Color(0xFF191600)),
-                    child: const Text('카카오로 시작하기 (준비 중)'),
+                    child: Text(supportsKakao ? '카카오로 시작하기' : '카카오로 시작하기 (준비 중)'),
+                  ),
+                  ValueListenableBuilder<String?>(
+                    valueListenable: loginNotice,
+                    builder: (context, notice, _) => notice == null
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(notice, textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.error)),
+                          ),
                   ),
                   const SizedBox(height: 10),
                   FilledButton(

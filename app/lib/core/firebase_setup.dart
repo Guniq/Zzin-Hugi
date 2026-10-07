@@ -29,8 +29,10 @@ Future<void> initFirebase() async {
   FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, 8080);
   await FirebaseStorage.instance.useStorageEmulator(emulatorHost, 9199);
   FirebaseFunctions.instanceFor(region: functionsRegion).useFunctionsEmulator(emulatorHost, 5001);
+  final auth = FirebaseAuthService();
   try {
-    await FirebaseAuthService().restoreDebugSession();
+    // 카카오에서 돌아온 주소(?code=…)면 로그인을 마무리하고, 아니면 마지막 테스트 로그인을 복원한다.
+    if (!await auth.completeKakaoRedirect()) await auth.restoreDebugSession();
   } catch (e) {
     // 복원에 실패하면 로그인 화면에서 다시 로그인하면 된다.
     debugPrint('restoreDebugSession 실패: $e');

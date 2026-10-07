@@ -47,6 +47,12 @@ class _PlaceMapPickerState extends ConsumerState<PlaceMapPicker> {
     super.dispose();
   }
 
+  /// 핀 알약에 넣을 글자: 찐점수가 있으면 점수, 후기가 있지만 3개 미만이면 "후기 N", 없으면 빈 문자열.
+  String _badge(PlaceResult p) {
+    if (p.realScore != null) return scoreText(p.realScore);
+    return p.reviewCount > 0 ? '후기 ${p.reviewCount}' : '';
+  }
+
   PlaceResult? get _selected {
     for (final p in _results) {
       if (p.placeId == _selectedId) return p;
@@ -57,7 +63,7 @@ class _PlaceMapPickerState extends ConsumerState<PlaceMapPicker> {
   List<MapMarkerData> get _markers => [
         for (final p in _results)
           if (p.lat != null && p.lng != null)
-            MapMarkerData(id: p.placeId, lat: p.lat!, lng: p.lng!, name: p.name, blocked: p.region == null),
+            MapMarkerData(id: p.placeId, lat: p.lat!, lng: p.lng!, name: p.name, blocked: p.region == null, badge: _badge(p)),
       ];
 
   Future<void> _search({required bool fit}) async {
@@ -178,11 +184,19 @@ class _PlaceMapPickerState extends ConsumerState<PlaceMapPicker> {
             alignment: Alignment.bottomCenter,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 14, bottom: 12),
-                  child: _RoundButton(tooltip: '내 위치', icon: Icons.my_location, onPressed: _locate),
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                  child: SizedBox(
+                    height: 48,
+                    child: Stack(
+                      children: [
+                        if (_results.isNotEmpty) Center(child: _ListPill(onTap: () => widget.onShowList(_lastQuery, _results))),
+                        Align(alignment: Alignment.centerRight, child: _RoundButton(tooltip: '내 위치', icon: Icons.my_location, onPressed: _locate)),
+                      ],
+                    ),
+                  ),
                 ),
                 if (_searched && _results.isEmpty && _error == null)
                   const _EmptySheet()
@@ -190,7 +204,6 @@ class _PlaceMapPickerState extends ConsumerState<PlaceMapPicker> {
                   _PlaceSheet(
                     place: sel,
                     onPick: () => widget.onPicked(sel),
-                    onList: () => widget.onShowList(_lastQuery, _results),
                   ),
               ],
             ),
@@ -313,6 +326,34 @@ class _Pill extends StatelessWidget {
       );
 }
 
+/// 카카오맵 앱처럼 지도 아래 가운데에 떠 있는 "목록 보기" 알약.
+class _ListPill extends StatelessWidget {
+  const _ListPill({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: AppColors.card,
+        elevation: 3,
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.format_list_bulleted, size: 20, color: AppColors.ink),
+                SizedBox(width: 8),
+                Text('목록 보기', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+              ],
+            ),
+          ),
+        ),
+      );
+}
+
 class _EmptySheet extends StatelessWidget {
   const _EmptySheet();
 
@@ -358,10 +399,9 @@ class _SheetShell extends StatelessWidget {
 }
 
 class _PlaceSheet extends ConsumerWidget {
-  const _PlaceSheet({required this.place, required this.onPick, required this.onList});
+  const _PlaceSheet({required this.place, required this.onPick});
   final PlaceResult place;
   final VoidCallback onPick;
-  final VoidCallback onList;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -396,11 +436,6 @@ class _PlaceSheet extends ConsumerWidget {
                     Text(place.address, style: const TextStyle(fontSize: 14, color: AppColors.sub)),
                   ],
                 ),
-              ),
-              TextButton(
-                onPressed: onList,
-                style: TextButton.styleFrom(minimumSize: const Size(44, 44), foregroundColor: AppColors.ink),
-                child: const Text('목록 보기', style: TextStyle(fontWeight: FontWeight.w700, decoration: TextDecoration.underline)),
               ),
             ],
           ),

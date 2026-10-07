@@ -14,6 +14,20 @@ npm --prefix functions run dev:setup
 cd app; flutter pub get; cd ..
 ```
 
+## 카카오 로그인 켜기 (웹)
+로그인 화면의 **카카오로 시작하기** 버튼이 카카오 로그인 → 앱 복귀 → Firebase 로그인으로 이어진다. (키가 없으면 가짜 카카오로 흐름만 확인할 수 있다.)
+
+1. 진짜 카카오로 하려면 REST 키가 `functions/.secret.local` 에 있어야 한다 (`dev:setup -- --kakao-key=...`, 위 "진짜 식당 검색 켜기").
+2. 카카오 콘솔 → 앱 → **제품 설정 → 카카오 로그인**
+   - **활성화 설정**을 ON
+   - **Redirect URI** 에 접속 주소를 **끝의 `/` 까지 똑같이** 등록: `http://localhost:5050/` (폰이면 `http://<PC IP>:5050/`)
+   - **동의항목**에서 *닉네임*(profile_nickname)을 켠다 (켜지 않으면 닉네임 없이 가입된다)
+3. 앱이 **Client Secret** 을 켜 둔 상태라면(콘솔 → 앱 → 보안) 그 값을 넣는다:
+   `npm --prefix functions run dev:setup -- --kakao-key=<REST키> --kakao-secret=<Client Secret>` 후 에뮬레이터 재시작.
+4. 에뮬레이터 모드에서는 **새로고침하면 카카오 로그인이 풀린다**(웹 SDK 세션 복원 문제로 저장된 세션을 지우기 때문). 버튼을 다시 누르면 보통 바로 돌아온다.
+
+오류가 나면 에뮬레이터 터미널의 `kakao code exchange failed ... kakao_token 400: ...` 줄을 본다. 자주 보는 카카오 오류: `KOE006`(Redirect URI 불일치), `KOE101`(앱 키 오류), `KOE010`(Client Secret 불일치).
+
 ## 지도 검색 켜기 (선택, 카카오맵 JavaScript 키 필요)
 식당 찾기 화면이 카카오맵으로 바뀐다. 검색하면 핀이 찍히고, 핀을 눌러 고르고, 지도를 옮기면 `이 지역에서 다시 검색`이 뜬다.
 

@@ -29,8 +29,10 @@
 
 ## 아직 안 된 것 / 다음 할 일
 
-1. **카카오 로그인**: 서버 함수 `kakaoLogin`(카카오 액세스 토큰 → Firebase 커스텀 토큰)은 있으나 **앱 쪽 연결이 없다.** 로그인 화면의 카카오·Apple 버튼은 안내만 띄운다.
-   웹은 JavaScript 키 + Redirect URI 등록이 필요하다(JS 키는 있고, 카카오 로그인 사용 설정은 되어 있음).
+1. **카카오 로그인(웹)은 구현했고 사용자 확인 대기 중**: 인가 코드 방식. 앱이 `kakaoLoginUrl` 로 카카오 주소를 받아 이동 → `http://localhost:5050/?code=…` 로 복귀 →
+   `kakaoLogin({code, redirectUri})` 이 토큰 교환 후 Firebase 커스텀 토큰 발급(`signInWithCustomToken`). `state` 로 CSRF 확인. 카카오 콘솔의 **Redirect URI**(`http://localhost:5050/`, 끝 `/` 포함)와
+   동의항목(닉네임) 등록이 필요하고, Client Secret 을 켰으면 `dev:setup --kakao-secret=` 로 넣는다. 에뮬레이터 모드에서는 새로고침하면 로그인이 풀린다. **Apple 로그인은 아직 없다.**
+   키가 없을 때는 `FAKE_KAKAO` 가짜 로그인(`fakeAuthorizeUrl` 등)으로 흐름만 확인한다.
 2. **실서버 연결/배포**: 실제 Firebase 프로젝트, `flutterfire configure`, `firebase_options.dart`, `config/regions` 문서, 시크릿(`firebase functions:secrets:set`). 지금 앱은 `--dart-define=USE_EMULATOR=true` 없이는 시작하지 않는다.
 3. **CLOVA OCR**: 응답 필드 경로(`confirmNum`, `addresses`)가 **공식 문서로 미검증**. 실제 영수증 10장을 `functions/test/fixtures/clova/` 에 넣어 파서를 확인해야 한다. 지금 에뮬레이터의 영수증 인식은 가짜(아무 사진이나 통과).
 4. **네이티브 앱**: iOS는 Mac/클라우드 빌드 + Apple Developer 가입이 필요. 모바일 지도는 웹과 다른 SDK로 `kakao_place_map_stub.dart` 자리에 새로 만들어야 한다.

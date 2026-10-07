@@ -11,10 +11,17 @@ import 'package:zzinhugi/data/providers.dart';
 import 'package:zzinhugi/domain/models.dart';
 
 class FakeAuth implements AuthService {
-  FakeAuth([this.uid = 'me']);
+  FakeAuth([this.uid = 'me', this.kakaoSupported = true]);
   String? uid;
   String? lastNickname;
   bool signedOut = false;
+  bool kakaoSupported;
+  int kakaoCalls = 0;
+
+  @override
+  bool get supportsKakao => kakaoSupported;
+  @override
+  Future<void> signInKakao() async => kakaoCalls++;
 
   @override
   String? get currentUid => uid;

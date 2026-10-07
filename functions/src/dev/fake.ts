@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { KakaoPlace, LatLng } from '../kakao';
+import { KakaoPlace, KakaoProfile, LatLng } from '../kakao';
 import { OcrReceipt, PlaceInfo, kstDate } from '../receipt';
 
 // 에뮬레이터에서만 true. 실서버에서 FAKE_EXTERNALS가 실수로 켜져도 FUNCTIONS_EMULATOR가 없으므로 false.
@@ -15,6 +15,16 @@ export const FAKE_PLACES: KakaoPlace[] = [
   { placeId: 'fake-5', name: '화곡 찐빵집', address: '서울 강서구 화곡동 1040-2', roadAddress: '서울 강서구 화곡로 288', category: '간식 · 제과,베이커리', lat: 37.5425, lng: 126.8390 },
   { placeId: 'fake-6', name: '강남 찐돈까스', address: '서울 강남구 역삼동 100', roadAddress: '서울 강남구 테헤란로 60', category: '일식 · 돈까스,우동', lat: 37.5000, lng: 127.0360 },
 ];
+
+// --- 카카오 로그인 가짜: 카카오에 가지 않고 곧바로 redirectUri 로 되돌려 보낸다 (에뮬레이터 전용) ---
+export function fakeAuthorizeUrl(redirectUri: string, state: string): string {
+  const u = new URL(redirectUri);
+  u.searchParams.set('code', 'fake-code');
+  u.searchParams.set('state', state);
+  return u.toString();
+}
+export const fakeExchange = async (code: string): Promise<string> => `fake-token:${code}`;
+export const fakeKakaoMe = async (): Promise<KakaoProfile> => ({ id: 'fake-kakao-1', nickname: '카카오테스터' });
 
 export async function fakeKakaoSearch(query: string, _near: LatLng | null): Promise<KakaoPlace[]> {
   const q = query.replace(/\s/g, '');

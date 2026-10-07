@@ -12,6 +12,8 @@
 npx --prefix functions firebase use prod
 npx --prefix functions firebase functions:secrets:set KAKAO_REST_KEY
 npx --prefix functions firebase functions:secrets:set CLOVA_OCR_SECRET
+# 카카오 로그인: 앱에서 Client Secret 을 켰으면 그 값, 쓰지 않으면 none
+npx --prefix functions firebase functions:secrets:set KAKAO_CLIENT_SECRET
 echo "CLOVA_OCR_URL=<Invoke URL>" > functions/.env.prod
 ```
 

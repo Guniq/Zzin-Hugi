@@ -10,7 +10,7 @@ enum RestaurantSort { real, bubble }
 enum ReviewSort { likes, recent }
 
 class PlaceResult {
-  const PlaceResult({required this.placeId, required this.name, required this.address, this.category = '', this.region, this.lat, this.lng});
+  const PlaceResult({required this.placeId, required this.name, required this.address, this.category = '', this.region, this.lat, this.lng, this.realScore, this.reviewCount = 0});
   final String placeId;
   final String name;
   final String address;
@@ -18,6 +18,10 @@ class PlaceResult {
   final String? region;
   final double? lat;
   final double? lng;
+
+  /// 이미 찐후기가 쌓인 식당이면 찐점수(3개 미만이면 null)와 후기 수. 지도 핀에 보여 준다.
+  final double? realScore;
+  final int reviewCount;
 
   factory PlaceResult.fromMap(Map<String, dynamic> m) => PlaceResult(
         placeId: m['placeId'] as String,
@@ -27,6 +31,8 @@ class PlaceResult {
         region: m['region'] as String?,
         lat: _d(m['lat']),
         lng: _d(m['lng']),
+        realScore: _d(m['realScore']),
+        reviewCount: _i(m['reviewCount']),
       );
 }
 
