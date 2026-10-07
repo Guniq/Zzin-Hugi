@@ -3,3 +3,4 @@ functions/lib/
 *.log
 .firebase/
 .superpowers/
+*-debug.log

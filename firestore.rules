@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+
+    match /restaurants/{id} { allow read: if signedIn(); }
+    match /users/{uid} { allow read: if signedIn(); }
+    match /crowns/{id} { allow read: if signedIn(); }
+
+    match /reviews/{reviewId} {
+      allow read: if signedIn();
+
+      match /likes/{likerUid} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && likerUid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['createdAt'])
+          && request.resource.data.createdAt == request.time
+          && get(/databases/$(database)/documents/reviews/$(reviewId)).data.uid != request.auth.uid
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verifiedReviewCount >= 1;
+        allow delete: if signedIn() && likerUid == request.auth.uid;
+      }
+    }
+
+    match /reports/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['reviewId', 'reporterUid', 'reason', 'createdAt'])
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 200;
+    }
+  }
+}
