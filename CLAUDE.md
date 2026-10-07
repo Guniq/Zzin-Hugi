@@ -17,6 +17,17 @@
    `functions/.secret.local`)은 (`api-key.txt` 는 **Admin 키라서 쓰지 않는다** — 카카오 로그인에서 KOE008) 출력·채팅·커밋에 노출하지 않는다. 모두 git 무시 대상이다.
 4. 방화벽·PATH 같은 **시스템 보안 설정은 직접 바꾸지 않고** 명령만 안내한다. 큰 다운로드·전역 설치는 먼저 묻는다.
 5. 큰 기능은 **디자인 캔버스에서 먼저 확인받고** 구현한다 (아래 "디자인").
+6. **커밋 메시지에 `Co-Authored-By: Claude ...` 줄을 넣지 않는다.** (PR 설명의 "Generated with Claude Code" 문구도 넣지 않는다.)
+   GitHub Contributors 에 `claude` 가 뜨는 걸 사용자가 원하지 않아서, 2026-10-07 에 기존 43개 커밋의 해당 줄을 `filter-branch` 로 지우고 force push 했다.
+   이후 커밋은 작성자가 `guni` 하나여야 한다. (Contributors 의 `claude` 는 GitHub 캐시라 하루쯤 걸려 사라진다. 계속 남으면 GitHub Support 에 캐시 갱신 요청.)
+   이 PC 에는 GitHub 인증이 없어서 push 는 사용자가 `! git push` 로 직접 한다.
+
+## 저장소
+
+- GitHub: https://github.com/Guniq/Zzin-Hugi (기본 브랜치 `master`로 설정 필요 — Settings → Branches). `feat/*` 체인은 모두 `master` 에 합쳐졌고, 옛 `feat/*` 는 정리 대상.
+- 다른 PC 에서 실행하는 순서는 `docs/desktop-setup.md`. 비밀 키 3개(`restapi-key.txt`, `login-key.txt`, `kakao-js-key.txt`)는 git 에 없어서 직접 복사해야 한다.
+- 로컬 `backup/before-rewrite` 는 이력 정리 전 백업(원격엔 없음). 필요 없으면 지운다.
+- 남은 일 목록(테스트 갱신, 카카오 로그인 확인, 배포 등)은 아래 "아직 안 된 것"과 GitHub 이슈에 있다.
 
 ## 현재 상태 (마지막 정리 시점)
 
