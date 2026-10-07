@@ -447,7 +447,6 @@ Expected: `tsc` 에러 없음, 모든 테스트 통과(기존 + 신규)
 - [ ] **Step 9: 커밋**
 
 ```bash
-git checkout -b feat/app
 git add functions .gitignore
 git commit -m "feat(functions): add emulator-only fake externals and demo seed data"
 ```
